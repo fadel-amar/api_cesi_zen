@@ -28,7 +28,8 @@ namespace CesiZen_API.Services
             {
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("UserId", user.Id.ToString())
+            new Claim("UserId", user.Id.ToString()),
+            new Claim("Role", user.Role)
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -45,29 +46,6 @@ namespace CesiZen_API.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
-        public async Task<AuthResponse> RegisterUserAsync(User user)
-        {
-            // Vérifier si l'email existe déjà
-            if (await _context.User.AnyAsync(u => u.Email == user.Email))
-            {
-                return new AuthResponse { Success = false, Message = "Email already in use" };
-            }
-
-            // Hacher le mot de passe
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-
-            // Sauvegarder l'utilisateur en base de données
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
-
-            return new AuthResponse
-            {
-                Success = true,
-                Message = "User registered successfully",
-            };
-
-        }
-    }
+         }
 
 }

@@ -11,6 +11,7 @@ namespace CesiZen_API.Controllers
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
+            _logger.LogInformation("HomeController initialized.");
         }
 
         public IActionResult Index()

@@ -1,4 +1,4 @@
-﻿using CesiZen_API.Models;
+﻿using CesiZen_API.Models.DTO;
 using CesiZen_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,40 +20,73 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] User user)
+    public async Task<IActionResult> Register([FromBody] UserDTO.RegisterDTO userDto)
     {
-        if (await _context.User.AnyAsync(u => u.Email == user.Email))
+        var errors = new List<string>();
+
+        if (await _context.User.AnyAsync(u => u.Email == userDto.Email))
+            errors.Add("L'email est déjà utilisé");
+
+        if (await _context.User.AnyAsync(u => u.Login == userDto.Login))
+            errors.Add("Le login est déjà utilisé");
+
+        if (errors.Count > 0)
         {
             return BadRequest(new
             {
                 status = 400,
-                message = "Email dèjà utiilisé"
+                errors = errors
             });
         }
 
-        user.PasswordHash = HashPassword(user.PasswordHash);
+        var user = new User
+        {
+            Email = userDto.Email,
+            Login = userDto.Login,
+            Password = HashPassword(userDto.Password),
+            Role = "User",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
         _context.User.Add(user);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(Register), new
         {
             status = 201,
-            message = "Utilisateur créer avex susccés",
-            data = new
-            {
-                id = user.Id,
-                email = user.Email
-            }
+            message = "Utilisateur créé avec succès"
         });
     }
 
 
+
+
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] UserDTO.LoginDTO loginDto)
     {
-        var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-        if (existingUser == null || existingUser.PasswordHash != HashPassword(loginDto.Password))
-            return Unauthorized("Invalid email or password.");
+
+
+        if (string.IsNullOrWhiteSpace(loginDto.Email) && string.IsNullOrWhiteSpace(loginDto.Login))
+        {
+            return BadRequest(new
+            {
+                status = 400,
+                message = "Vous devez fournir soit un email, soit un login."
+            });
+        }
+
+        var existingUser = await _context.User.FirstOrDefaultAsync(u => (u.Email == loginDto.Email) || u.Login ==loginDto.Login );
+
+        if (existingUser == null || existingUser.Password != HashPassword(loginDto.Password))
+
+            return Unauthorized(
+            new
+            {
+                staus = 401,
+                message = "Identifiants invalides"
+            });
+
 
         var token = _authService.GenerateJwtToken(existingUser);
         return Ok(new { Token = token });

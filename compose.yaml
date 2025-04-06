@@ -1,0 +1,15 @@
+networks:
+  internal:
+    driver: bridge
+
+services:
+  database:
+    image: 'mariadb'
+    ports:
+      - '3306:3306'
+    container_name: db_cesizen
+    networks:
+      - internal
+    env_file: ".env"
+    volumes:
+      - './BDD/db/:/var/lib/mysql'

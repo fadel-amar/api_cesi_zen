@@ -9,7 +9,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<User>().ToTable("user"); // Définit le nom de la table
+        modelBuilder.Entity<User>().ToTable("user");
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
