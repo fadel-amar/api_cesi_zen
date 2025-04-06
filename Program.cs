@@ -4,20 +4,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CesiZen_API.Services;
 
+DotNetEnv.Env.Load();
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    new MySqlServerVersion(new Version(8, 0, 3))));
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
 
 builder.Services.AddScoped<AuthService>();
 
-// Configuration de l'authentification JWT (✅ Déplacé avant `builder.Build();`)
-var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
-
+var key = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -37,7 +38,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -49,7 +49,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Ajout de l'authentification et de l'autorisation dans le pipeline ( Ajouté ici)
 app.UseAuthentication();
 app.UseAuthorization();
 
