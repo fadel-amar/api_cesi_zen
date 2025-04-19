@@ -14,26 +14,40 @@ namespace CesiZen_API.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context), "AppDbContext n'est pas défini");
         }
 
-
         [HttpGet()]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? filter = null)
         {
-            var users =await _context.User
+            var query = _context.User.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                query = query.Where(u => u.Login.Contains(filter) || u.Email.Contains(filter));
+            }
+
+            var totalUsers = await query.CountAsync();
+            var users = await query
                 .Select(u => new { u.Id, u.Login, u.Email, u.CreatedAt, u.UpdatedAt, u.Banned, u.Disabled })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             if (users != null)
             {
-                return Ok(users);
+                return Ok(new
+                {
+                    TotalUsers = totalUsers,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    Users = users
+                });
             }
 
             return NotFound(
              new
              {
-                 staus = 404,
+                 status = 404,
                  message = "Aucun utilisateur a été trouvé"
              });
-
         }
 
         [HttpGet("{id}")]
@@ -42,7 +56,7 @@ namespace CesiZen_API.Controllers
             var user = await _context.User
                 .Where(u => u.Id == id)
                 .Select(u => new { u.Id, u.Login, u.Email, u.CreatedAt, u.UpdatedAt, u.Banned, u.Disabled })
-                 .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync();
 
             if (user != null)
             {
@@ -52,10 +66,9 @@ namespace CesiZen_API.Controllers
             return NotFound(
              new
              {
-                 staus = 404,
+                 status = 404,
                  message = "Aucun utilisateur a été trouvé"
              });
-
         }
     }
 
