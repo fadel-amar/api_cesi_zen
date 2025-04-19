@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CesiZen_API.Data.Fakers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace CesiZen_API.Controllers
 {
@@ -69,6 +70,22 @@ namespace CesiZen_API.Controllers
                  status = 404,
                  message = "Aucun utilisateur a été trouvé"
              });
+        }
+
+
+
+        [HttpPost("seed-users")]
+        public IActionResult SeedUsers([FromQuery] int count = 50)
+        {
+            try
+            {
+                FakerUsers.SeedUsers(_context, count);
+                return Ok(new { Message = $"{count} utilisateurs ont été générés avec succès." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Une erreur est survenue lors de la génération des utilisateurs.", Error = ex.Message });
+            }
         }
     }
 
