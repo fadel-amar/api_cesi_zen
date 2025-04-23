@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 public class User
@@ -32,4 +34,20 @@ public class User
     public bool Disabled { get; set; } = false;
 
     public bool Banned { get; set; } = false;
+
+    public void SetPassword(string plainPassword)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainPassword));
+        Password = Convert.ToBase64String(hashedBytes);
+    }
+
+    public bool VerifyPassword(string plainPassword)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(plainPassword));
+        var hashedPassword = Convert.ToBase64String(hashedBytes);
+        return Password == hashedPassword;
+    }
 }
+

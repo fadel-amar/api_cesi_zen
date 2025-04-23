@@ -1,6 +1,9 @@
 ﻿using CesiZen_API.Data.Fakers;
+using CesiZen_API.Models.DTO;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 namespace CesiZen_API.Controllers
 {
 
@@ -72,7 +75,55 @@ namespace CesiZen_API.Controllers
              });
         }
 
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO.PatchDTO userDto)
+        {
+            if (userDto == null)
+            {
+                return BadRequest(new { Message = "Les données de l'utilisateur sont invalides." });
+            }
 
+            var user = await _context.User.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return NotFound(new { Message = "Utilisateur non trouvé." });
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Login))
+            {
+                user.Login = userDto.Login;
+            }
+            if (!string.IsNullOrEmpty(userDto.Email))
+            {
+                user.Email = userDto.Email;
+            }
+            if (!string.IsNullOrEmpty(userDto.Role))
+            {
+                user.Role = userDto.Role;
+            }
+
+            if (userDto.Banned.HasValue)
+            {
+                user.Banned = userDto.Banned.Value;
+            }
+
+            if(userDto.Disabled.HasValue)
+            {
+                user.Disabled = userDto.Disabled.Value;
+            }           
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { status = 200, Message = "Utilisateur mis à jour avec succès." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = 500, Message = "Une erreur est survenue lors de la mise à jour de l'utilisateur.", Error = ex.Message });
+            }
+        }
 
         [HttpPost("seed-users")]
         public IActionResult SeedUsers([FromQuery] int count = 50)
