@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 
-namespace CesiZen_API.Models.DTO
+namespace CesiZen_API.DTO
 {
     public class UserDTO
     {
         public class LoginDTO
         {
-            public string? Email { get; set; } 
+            public string? Email { get; set; }
 
             public string? Login { get; set; }
 
@@ -32,7 +32,7 @@ namespace CesiZen_API.Models.DTO
         }
 
         public class PatchDTO
-        { 
+        {
             public string? Login { get; set; }
             public string? Email { get; set; }
             public string? Role { get; set; }

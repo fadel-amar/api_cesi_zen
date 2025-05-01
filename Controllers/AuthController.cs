@@ -1,4 +1,5 @@
-﻿using CesiZen_API.Models.DTO;
+﻿using CesiZen_API.DTO;
+using CesiZen_API.Models;
 using CesiZen_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -60,8 +61,6 @@ public class AuthController : ControllerBase
     }
 
 
-
-
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserDTO.LoginDTO loginDto)
     {
@@ -90,7 +89,6 @@ public class AuthController : ControllerBase
         var token = _authService.GenerateJwtToken(existingUser);
         return Ok(new { Token = token});
     }
-
 
     private string HashPassword(string password)
     {
