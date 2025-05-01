@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt;
 using Microsoft.EntityFrameworkCore;
+using CesiZen_API.Models;
 
 namespace CesiZen_API.Services
 {
