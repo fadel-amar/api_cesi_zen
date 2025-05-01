@@ -43,11 +43,11 @@ public class AuthController : ControllerBase
         {
             Email = userDto.Email,
             Login = userDto.Login,
-            Password = HashPassword(userDto.Password),
             Role = "User",
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+        user.SetPassword(userDto.Password);
 
         _context.User.Add(user);
         await _context.SaveChangesAsync();
@@ -66,7 +66,6 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] UserDTO.LoginDTO loginDto)
     {
 
-
         if (string.IsNullOrWhiteSpace(loginDto.Email) && string.IsNullOrWhiteSpace(loginDto.Login))
         {
             return BadRequest(new
@@ -78,7 +77,7 @@ public class AuthController : ControllerBase
 
         var existingUser = await _context.User.FirstOrDefaultAsync(u => (u.Email == loginDto.Email) || u.Login ==loginDto.Login );
 
-        if (existingUser == null || existingUser.Password != HashPassword(loginDto.Password))
+        if (existingUser == null || existingUser.VerifyPassword(loginDto.Password))
 
             return Unauthorized(
             new
@@ -89,7 +88,7 @@ public class AuthController : ControllerBase
 
 
         var token = _authService.GenerateJwtToken(existingUser);
-        return Ok(new { Token = token });
+        return Ok(new { Token = token});
     }
 
 
