@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CesiZen_API.Services;
+using CesiZen_API.Services.Interfaces;
 
 DotNetEnv.Env.Load();
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 var key = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

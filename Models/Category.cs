@@ -1,7 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 
 namespace CesiZen_API.Models
 {

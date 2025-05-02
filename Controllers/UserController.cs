@@ -77,10 +77,6 @@ namespace CesiZen_API.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO.PatchDTO userDto)
         {
-            if (userDto == null)
-            {
-                return BadRequest(new { Message = "Les données de l'utilisateur sont invalides." });
-            }
 
             var user = await _context.User.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
