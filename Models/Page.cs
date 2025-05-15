@@ -13,7 +13,13 @@ namespace CesiZen_API.Models
         [Required]
         public string Content { get; set; }
 
+        public string link { get; set; }
+
+        public string type_link { get; set; }
+
         public bool Visibility { get; set; } = true;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public Menu Menu { get; set; }
 

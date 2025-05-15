@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CesiZen_API.DTO;
+﻿using CesiZen_API.DTO;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +26,7 @@ namespace CesiZen_API.Controllers
                 return NotFound(new
                 {
                     status = 404,
-                    message = $"Aucune catégorie a été trouvé"
+                    message = "Aucune catégorie a été trouvé"
                 });
             }
 
@@ -42,14 +41,14 @@ namespace CesiZen_API.Controllers
                 return NotFound(new
                 {
                     status = 404,
-                    message = $"Ce catégorie n'a pas été trouvé"
+                    message = "Ce catégorie n'a pas été trouvé"
                 });
 
             return Ok(category);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO categoryDto)
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO.CreateCategoryDto categoryDto)
         {
             Category category = new Category { Name = categoryDto.Name };
             var created = await _categoryService.CreateAsync(category);
@@ -62,7 +61,7 @@ namespace CesiZen_API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO categoryDto)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO.UpdateCategoryDto categoryDto)
         {
             Category? category = await _categoryService.GetByIdAsync(id);
             if (category == null)

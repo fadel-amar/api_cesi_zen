@@ -32,6 +32,12 @@ namespace CesiZen_API.Services
 
         public async Task<bool> UpdateAsync(Category category)
         {
+            var existing = await _context.Category.FindAsync(category.Id);
+            if (existing == null)
+                return false;
+
+            existing.Name = category.Name; 
+
             await _context.SaveChangesAsync();
             return true;
         }
