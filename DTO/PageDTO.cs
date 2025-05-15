@@ -1,0 +1,58 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
+
+namespace CesiZen_API.DTO
+{
+    public class CreatePageDto
+    {
+        [Required(ErrorMessage = "Le titre de la page est obligatoire")]
+        public string Title { get; set; }
+
+        [Required(ErrorMessage = "Le contenu de la page est obligatoire")]
+        public string Content { get; set; }
+
+        [Url(ErrorMessage ="Le lien doit être un url valide")]
+        public string? link { get; set; }
+
+        public string? type_link { get; set; }
+
+    }
+
+    public class UpdatePageDto
+    {
+        public string? Title { get; set; }
+        public string? Content { get; set; }
+        public string? link { get; set; }
+        public string? type_link { get; set; }
+        public int? status { get; set; }
+
+    }
+
+
+    public class ResponsePageDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public string? link { get; set; }
+        public string? type_link { get; set; }
+        public bool Visibility { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class ResponsePageDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Content { get; set; }
+        public bool Visibility { get; set; }
+    }
+
+   public class ResponseListPageDto
+    {
+        
+    }
+
+
+
+}

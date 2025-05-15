@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using CesiZen_API.DTO;
+using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +10,7 @@ namespace CesiZen_API.Controllers
     [ApiController]
     public class PageController : ControllerBase
     {
-        private readonly IPageService _pageService ;
+        private readonly IPageService _pageService;
         PageController(IPageService pageService)
         {
             _pageService = pageService;
@@ -20,7 +22,7 @@ namespace CesiZen_API.Controllers
 
             var (totalPages, pages) = await _pageService.GetAllAsync(pageNumber, pageSize, filter);
 
-            return Ok( new
+            return Ok(new
             {
                 Pages = pages,
                 TotalPages = totalPages,
@@ -28,6 +30,49 @@ namespace CesiZen_API.Controllers
                 PageSize = pageSize,
             });
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPageById(int id)
+        {
+            var page = await _pageService.GetByIdAsync(id);
+            if (page == null)
+            {
+                return NotFound();
+            }
+            return Ok(page);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePage([FromBody] CreatePageDto createPageDto)
+        {
+            Page newPage = new Page
+            {
+                Title = createPageDto.Title,
+                Content = createPageDto.Content,
+            };
+            if (createPageDto.link != null)
+            {
+                newPage.link = createPageDto.link;
+                if (createPageDto.type_link != null)
+                {
+                    newPage.type_link = createPageDto.type_link;
+                }
+                else
+                {
+                    return BadRequest("Le type de lien est obligatoire");
+                }
+            }
+
+            Page createdPage = await _pageService.CreateAsync(newPage);
+            return CreatedAtAction(nameof(GetPageById), new { id = createdPage.Id }, createdPage);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePage(int id, [FromBody] Page page)
+        {
+
+        }
+
 
 
     }
