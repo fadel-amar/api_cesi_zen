@@ -55,32 +55,7 @@ namespace CesiZen_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
         {
-            Menu? parentMenu = null;
-
-            if (menuDto.ParentId != null)
-            {
-                parentMenu = await _menuService.GetByIdAsync(menuDto.ParentId.Value);
-                if (parentMenu == null)
-                {
-                    return NotFound(new
-                    {
-                        status = 404,
-                        message = "Le menu parent spécifié n'existe pas"
-                    });
-                }
-            }
-
-            Menu menu = new Menu
-            {
-                Title = menuDto.Title
-            };
-
-            if (parentMenu != null)
-            {
-                menu.Parent = parentMenu;
-            }
-
-            var created = await _menuService.CreateAsync(menu);
+            Menu created = await _menuService.CreateAsync(menuDto);
 
             return StatusCode(201, new
             {
@@ -95,36 +70,8 @@ namespace CesiZen_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
         {
-            Menu? menuExisting = await _menuService.GetByIdAsync(id);
-            if (menuExisting == null)
-            {
-                return NotFound(new
-                {
-                    status = 404,
-                    message = "Ce menu n'existe pas"
-                });
-            }
-
-            if (menuDto.Title != null) menuExisting.Title = menuDto.Title;
-            if (menuDto.Status.HasValue) menuExisting.Status = menuDto.Status.Value;
-
-            if (menuDto.ParentId.HasValue)
-            {
-                Menu? parentMenu = await _menuService.GetByIdAsync(menuDto.ParentId.Value);
-                if (parentMenu == null)
-                {
-                    return NotFound(new
-                    {
-                        status = 404,
-                        message = "Le menu parent spécifié n'existe pas"
-                    });
-                }
-
-                menuExisting.Parent = parentMenu;
-            }
-
-            bool updated = await _menuService.UpdateAsync(menuExisting);
-
+           
+            bool updated = await _menuService.UpdateAsync(id ,menuDto);
             if (!updated)
             {
                 return BadRequest(new

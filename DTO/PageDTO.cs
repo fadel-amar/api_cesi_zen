@@ -40,7 +40,7 @@ namespace CesiZen_API.DTO
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
-    public class ResponsePageDto
+    public class ResponseListPageDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -48,9 +48,14 @@ namespace CesiZen_API.DTO
         public bool Visibility { get; set; }
     }
 
-   public class ResponseListPageDto
+   public class ListPageDto
     {
-        
+        public ResponseListPageDto[] Pages{ get; set; }
+        public int TotalPages { get; set; }
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+
+
     }
 
 
