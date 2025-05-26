@@ -1,6 +1,9 @@
 ﻿using CesiZen_API.DTO;
+using CesiZen_API.Mapper;
 using CesiZen_API.Models;
+using CesiZen_API.Services;
 using CesiZen_API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,33 +16,23 @@ namespace CesiZen_API.Controllers
     {
         private readonly IMenuService _menuService;
 
-
-        MenuController(IMenuService menuService)
+        public MenuController(IMenuService menuService)
         {
-            _menuService = menuService;
+            _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService), "MenuSerice n'est pas défini");
         }
 
 
         [HttpGet]
         public async Task<IActionResult> GetAllMenus()
         {
-            IEnumerable<Menu> menus = await _menuService.GetAllAsync();
-            if (!menus.Any())
-            {
-                return NotFound(new
-                {
-                    status = 404,
-                    message = "Aucun menu n'a été trouvé"
-                });
-            }
-
-            return Ok(menus);
+            IEnumerable<Menu> menus = await _menuService.GetAllMenu();
+            return Ok(MenuMapper.ToResponseListDto(menus));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMenuById(int id)
         {
-            Menu? menu = await _menuService.GetByIdAsync(id);
+            Menu? menu = await _menuService.GetMenuById(id);
             if (menu == null)
             {
                 return NotFound(new
@@ -49,20 +42,22 @@ namespace CesiZen_API.Controllers
                 });
             }
 
-            return Ok(menu);
+            return Ok(MenuMapper.ToResponseFullDto(menu));
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
         {
-            Menu created = await _menuService.CreateAsync(menuDto);
+            Menu menuCreated = await _menuService.CreateMenu(menuDto);  
 
             return StatusCode(201, new
             {
                 status = 201,
                 message = "Le menu a bien été créé",
-                data = created
+                data = MenuMapper.ToResponseFullDto(menuCreated)
             });
+
         }
 
 
@@ -70,8 +65,8 @@ namespace CesiZen_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
         {
-           
-            bool updated = await _menuService.UpdateAsync(id ,menuDto);
+
+            bool updated = await _menuService.UpdateMenu(id, menuDto);
             if (!updated)
             {
                 return BadRequest(new
@@ -85,7 +80,7 @@ namespace CesiZen_API.Controllers
             {
                 status = 200,
                 message = "Le menu a bien été mis à jour",
-                data = menuExisting
+                data = MenuMapper.ToResponseFullDto(await _menuService.GetMenuById(id))
             });
         }
 
@@ -93,7 +88,7 @@ namespace CesiZen_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            bool deleted = await _menuService.DeleteAsync(id);
+            bool deleted = await _menuService.DeleteMenu(id);
             if (!deleted)
             {
                 return NotFound(new

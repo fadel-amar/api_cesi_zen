@@ -7,15 +7,16 @@ namespace CesiZen_API.Models
     {
         public int Id { get; set; }
 
-        [MaxLength(35)]
         public string Title { get; set; }
 
         [Required]
         public string Content { get; set; }
 
-        public string link { get; set; }
+        [MaxLength(255)]
+        public string? link { get; set; }
 
-        public string type_link { get; set; }
+        [MaxLength(50)]
+        public string? type_link { get; set; }
 
         public bool Visibility { get; set; } = true;
 

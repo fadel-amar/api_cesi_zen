@@ -14,15 +14,15 @@ namespace CesiZen_API.Services
         {
             _context = context;
         }
-        public async Task<IEnumerable<Menu>> GetAllAsync()
+        public async Task<IEnumerable<Menu>> GetAllMenu()
         {
             return await _context.Menu.ToListAsync();
         }
-        public async Task<Menu> GetByIdAsync(int id)
+        public async Task<Menu> GetMenuById(int id)
         {
             return await _context.Menu.FindAsync(id);
         }
-        public async Task<Menu> CreateAsync(CreateMenuDto newMenuDto)
+        public async Task<Menu> CreateMenu(CreateMenuDto newMenuDto)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace CesiZen_API.Services
 
                 if (newMenuDto.ParentId != null)
                 {
-                    parentMenu = await this.GetByIdAsync(newMenuDto.ParentId.Value);
+                    parentMenu = await this.GetMenuById(newMenuDto.ParentId.Value);
                     if (parentMenu == null)
                     {
                         throw new BadHttpRequestException("Le menu parent spécifié n'existe pas.");
@@ -39,7 +39,8 @@ namespace CesiZen_API.Services
 
                 Menu menu = new Menu
                 {
-                    Title = newMenuDto.Title
+                    Title = newMenuDto.Title,
+                    Status = 1
                 };
 
                 if (parentMenu != null)
@@ -61,11 +62,11 @@ namespace CesiZen_API.Services
                 throw new Exception("Une erreur interne est survenue : " + ex.Message);
             }
         }
-        public async Task<bool> UpdateAsync(int id, UpdateMenuDto menuDto)
+        public async Task<bool> UpdateMenu(int id, UpdateMenuDto menuDto)
         {
             try
             {
-                Menu? menuExisting = await this.GetByIdAsync(id);
+                Menu? menuExisting = await this.GetMenuById(id);
                 if (menuExisting == null)
                 {
                     throw new KeyNotFoundException("Ce menu n'existe pas.");
@@ -76,7 +77,7 @@ namespace CesiZen_API.Services
 
                 if (menuDto.ParentId.HasValue)
                 {
-                    Menu? parentMenu = await this.GetByIdAsync(menuDto.ParentId.Value);
+                    Menu? parentMenu = await this.GetMenuById(menuDto.ParentId.Value);
                     if (parentMenu == null)
                     {
                         throw new KeyNotFoundException("Le menu parent spécifié n'existe pas.");
@@ -98,7 +99,7 @@ namespace CesiZen_API.Services
             }
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteMenu(int id)
         {
             var menu = await _context.Menu.FindAsync(id);
             if (menu == null) return false;

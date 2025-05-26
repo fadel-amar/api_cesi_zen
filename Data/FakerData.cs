@@ -17,7 +17,7 @@ namespace CesiZen_API.Data
 
             dbContext.SaveChanges();
         }
-
+        
         private static List<User> GenerateUsers(AppDbContext dbContext)
         {
             var userFaker = new Faker<User>()
@@ -57,9 +57,11 @@ namespace CesiZen_API.Data
                 .RuleFor(a => a.Description, f => f.Lorem.Sentence(10))
                 .RuleFor(a => a.TypeActitvity, f => f.PickRandom(new[] { "Yoga", "Meditation", "Course", "Détente" }))
                 .RuleFor(a => a.url, f => f.Internet.Url())
-                .RuleFor(a => a.Status, f => f.PickRandom(new[] {Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
+                .RuleFor(a => a.Status, f => f.PickRandom(new[] { Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
                 .RuleFor(a => a.CreatedAt, f => f.Date.Past())
-                .RuleFor(a => a.Category, f => f.PickRandom(categories));
+                .RuleFor(a => a.Category, f => f.PickRandom(categories))
+                .RuleFor(a => a.User, f => f.PickRandom(users));
+
 
             var activites = activiteFaker.Generate(20);
             dbContext.Activite.AddRange(activites);
@@ -71,9 +73,9 @@ namespace CesiZen_API.Data
             var menuFaker = new Faker<Menu>()
                 .RuleFor(m => m.Title, f => f.Lorem.Word())
                 .RuleFor(m => m.Status, f => f.PickRandom(new[] { Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
-                .RuleFor(m => m.DateCreation, f => f.Date.Past())
+                .RuleFor(m => m.CreatedAt, f => f.Date.Past())
                 .RuleFor(m => m.User, f => f.PickRandom(users))
-                .RuleFor(m => m.Parent, f => null); 
+                .RuleFor(m => m.Parent, f => null);
 
             var menus = menuFaker.Generate(5);
             dbContext.Menu.AddRange(menus);

@@ -1,26 +1,48 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using BCrypt;
-using Microsoft.EntityFrameworkCore;
+using CesiZen_API.DTO;
 using CesiZen_API.Models;
+using CesiZen_API.Services.Interfaces;
+
 
 namespace CesiZen_API.Services
 {
     public class AuthService
     {
         private readonly IConfiguration _config;
-        private readonly AppDbContext _context;
+        private readonly IUserService _userService;
 
-        public AuthService(IConfiguration config, AppDbContext context)
+        public AuthService(IConfiguration config, IUserService userService)
         {
             _config = config;
-            _context = context;
+            _userService = userService;
+        }
+        public async Task<string> Register(RegisterDTO newUser)
+        {
+            User user = new User();
+            user.Login = newUser.Login;
+            user.Email = newUser.Email;
+            user.SetPassword(newUser.Password);
+            User userCreated = await _userService.CreateUser(user);
+            if (userCreated == null)
+            {
+                throw new Exception("Erreur lors de la création de l'utilisateur");
+            }
+            return GenerateJwtToken(user);
+        }
+
+        public async Task<string?> Login(LoginDTO loginDto)
+        {
+            User? existing = await _userService.GetUserByIdentifier(loginDto.Identifier);
+
+            if (existing == null || !existing.VerifyPassword(loginDto.Password))
+            {
+                return null;
+            }
+
+            return GenerateJwtToken(existing);
         }
 
         public string GenerateJwtToken(User user)

@@ -6,10 +6,10 @@ namespace CesiZen_API.Services.Interfaces
 {
     public interface IMenuService
     {
-        Task<IEnumerable<Menu>> GetAllAsync();
-        Task<Menu> GetByIdAsync(int id);
-        Task<Menu> CreateAsync(CreateMenuDto menu);
-        Task<bool> UpdateAsync(int id, UpdateMenuDto menu);
-        Task<bool> DeleteAsync(int id);     
+        Task<IEnumerable<Menu>> GetAllMenu();
+        Task<Menu> GetMenuById(int id);
+        Task<Menu> CreateMenu(CreateMenuDto menu);
+        Task<bool> UpdateMenu(int id, UpdateMenuDto menu);
+        Task<bool> DeleteMenu(int id);     
     }
 }

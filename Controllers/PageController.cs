@@ -70,7 +70,7 @@ namespace CesiZen_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePage(int id, [FromBody] Page page)
         {
-
+            return Ok();
         }
 
 

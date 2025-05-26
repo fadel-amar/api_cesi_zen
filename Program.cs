@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CesiZen_API.Services;
 using CesiZen_API.Services.Interfaces;
+using CesiZen_API.Data;
 
 DotNetEnv.Env.Load();
 
@@ -15,10 +16,11 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
-
-builder.Services.AddScoped<AuthService>();
+options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<AuthService>();
 
 
 var key = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY"));
@@ -59,7 +61,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-/*using (var scope = app.Services.CreateScope())
+/*
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();

@@ -21,79 +21,36 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] UserDTO.RegisterDTO userDto)
+    public async Task<IActionResult> Register([FromBody] RegisterDTO userDto)
     {
-        var errors = new List<string>();
+        string? result = await _authService.Register(userDto);
 
-        if (await _context.User.AnyAsync(u => u.Email == userDto.Email))
-            errors.Add("L'email est déjà utilisé");
-
-        if (await _context.User.AnyAsync(u => u.Login == userDto.Login))
-            errors.Add("Le login est déjà utilisé");
-
-        if (errors.Count > 0)
+        return Ok(new
         {
-            return BadRequest(new
-            {
-                status = 400,
-                errors = errors
-            });
-        }
-
-        var user = new User
-        {
-            Email = userDto.Email,
-            Login = userDto.Login,
-            Role = "User",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-        user.SetPassword(userDto.Password);
-
-        _context.User.Add(user);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(Register), new
-        {
-            status = 201,
-            message = "Utilisateur créé avec succès"
+            token = result
         });
     }
 
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserDTO.LoginDTO loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
     {
 
-        if (string.IsNullOrWhiteSpace(loginDto.Email) && string.IsNullOrWhiteSpace(loginDto.Login))
+        String? result = await _authService.Login(loginDto);
+
+        if (result == null)
         {
             return BadRequest(new
             {
                 status = 400,
-                message = "Vous devez fournir soit un email, soit un login."
+                message = "Identifiants invalides"
             });
         }
 
-        var existingUser = await _context.User.FirstOrDefaultAsync(u => (u.Email == loginDto.Email) || u.Login ==loginDto.Login );
+        return Ok(new
+        {
+            token = result
+        });
 
-        if (existingUser == null || existingUser.VerifyPassword(loginDto.Password))
-
-            return Unauthorized(
-            new
-            {
-                staus = 401,
-                message = "Identifiants invalides"
-            });
-
-
-        var token = _authService.GenerateJwtToken(existingUser);
-        return Ok(new { Token = token});
-    }
-
-    private string HashPassword(string password)
-    {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
     }
 }
