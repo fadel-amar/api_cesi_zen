@@ -17,7 +17,7 @@ namespace CesiZen_API.Data
 
             dbContext.SaveChanges();
         }
-        
+
         private static List<User> GenerateUsers(AppDbContext dbContext)
         {
             var userFaker = new Faker<User>()
@@ -31,7 +31,7 @@ namespace CesiZen_API.Data
                 .RuleFor(u => u.Banned, f => false);
 
             var users = userFaker.Generate(20);
-            users.ForEach(u => u.SetPassword(u.Password));
+            users.ForEach(u => u.SetPassword("popo"));
             dbContext.User.AddRange(users);
             return users;
         }
@@ -71,7 +71,7 @@ namespace CesiZen_API.Data
         private static List<Menu> GenerateMenus(AppDbContext dbContext, List<User> users)
         {
             var menuFaker = new Faker<Menu>()
-                .RuleFor(m => m.Title, f => f.Lorem.Word())
+                .RuleFor(m => m.Title, f => f.Lorem.Sentence(3))
                 .RuleFor(m => m.Status, f => f.PickRandom(new[] { Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
                 .RuleFor(m => m.CreatedAt, f => f.Date.Past())
                 .RuleFor(m => m.User, f => f.PickRandom(users))
@@ -85,7 +85,7 @@ namespace CesiZen_API.Data
         private static List<Page> GeneratePages(AppDbContext dbContext, List<User> users, List<Menu> menus)
         {
             var pageFaker = new Faker<Page>()
-                .RuleFor(p => p.Title, f => f.Lorem.Word())
+                .RuleFor(p => p.Title, f => f.Lorem.Sentence(3))
                 .RuleFor(p => p.Content, f => f.Lorem.Text())
                 .RuleFor(p => p.Visibility, f => f.Random.Bool())
                 .RuleFor(p => p.Menu, f => f.PickRandom(menus))

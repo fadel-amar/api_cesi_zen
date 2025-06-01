@@ -1,4 +1,5 @@
 ﻿using CesiZen_API.DTO;
+using CesiZen_API.Helper;
 using CesiZen_API.Mapper;
 using CesiZen_API.Models;
 using CesiZen_API.Services;
@@ -15,10 +16,12 @@ namespace CesiZen_API.Controllers
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
+        private readonly IUserService _userService;
 
-        public MenuController(IMenuService menuService)
+        public MenuController(IMenuService menuService, IUserService userService)
         {
             _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService), "MenuSerice n'est pas défini");
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService), "UserService n'est pas défini");
         }
 
 
@@ -46,10 +49,26 @@ namespace CesiZen_API.Controllers
         }
 
         [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
+
         public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
         {
-            Menu menuCreated = await _menuService.CreateMenu(menuDto);  
+            int? userId = User.GetUserId();
+
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "Utilisateur non authentifié" });
+            }
+
+            var user = await _userService.GetUserById(userId.Value);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Utilisateur introuvable" });
+            }
+
+            Menu menuCreated =  await _menuService.CreateMenu(menuDto, user);
 
             return StatusCode(201, new
             {

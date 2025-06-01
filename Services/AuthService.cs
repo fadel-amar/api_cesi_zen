@@ -52,7 +52,7 @@ namespace CesiZen_API.Services
             new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim("UserId", user.Id.ToString()),
-            new Claim("Role", user.Role)
+            new Claim("role", user.Role)
         };
 
             var key = Environment.GetEnvironmentVariable("JWT_KEY");

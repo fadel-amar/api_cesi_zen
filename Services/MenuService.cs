@@ -4,6 +4,7 @@ using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace CesiZen_API.Services
 {
@@ -22,7 +23,11 @@ namespace CesiZen_API.Services
         {
             return await _context.Menu.FindAsync(id);
         }
-        public async Task<Menu> CreateMenu(CreateMenuDto newMenuDto)
+        public async Task<Menu?> GetMenuByTitle(string title)
+        {
+            return await _context.Menu.FirstOrDefaultAsync(m => m.Title == title);
+        }
+        public async Task<Menu> CreateMenu(CreateMenuDto newMenuDto, User user)
         {
             try
             {
@@ -40,6 +45,7 @@ namespace CesiZen_API.Services
                 Menu menu = new Menu
                 {
                     Title = newMenuDto.Title,
+                    User = user,
                     Status = 1
                 };
 

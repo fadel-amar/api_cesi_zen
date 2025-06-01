@@ -8,7 +8,8 @@ namespace CesiZen_API.Services.Interfaces
     {
         Task<IEnumerable<Menu>> GetAllMenu();
         Task<Menu> GetMenuById(int id);
-        Task<Menu> CreateMenu(CreateMenuDto menu);
+        Task<Menu> GetMenuByTitle(string title);
+        Task<Menu> CreateMenu(CreateMenuDto menu, User user);
         Task<bool> UpdateMenu(int id, UpdateMenuDto menu);
         Task<bool> DeleteMenu(int id);     
     }
