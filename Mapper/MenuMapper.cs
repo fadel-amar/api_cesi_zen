@@ -13,11 +13,49 @@ namespace CesiZen_API.Mapper
                 Title = menu.Title,
                 Status = menu.Status,
                 DateCreation = menu.CreatedAt,
-                Parent = menu.Parent,
-                SousMenus = menu.SousMenus,
-                Pages = menu.Pages,
-                User = menu.User,
+                Parent = ToParentDto(menu.Parent),
+                SousMenus = menu.SousMenus?.Select(ToSousMenuDto).ToList() ?? new(),
+                Pages = menu.Pages.Select(ToPageDto).ToList(),
+                User = toUserDto(menu.User),
                 CreatedAt = menu.CreatedAt,
+            };
+        }
+
+        public static ParentMenuResponseDTO ToParentDto(Menu menu)
+        {
+            if (menu == null) return null;
+            return new ParentMenuResponseDTO
+            {
+                Id = menu.Id,
+                Title = menu.Title
+            };
+        }
+        public static SousMenuResponseDTO ToSousMenuDto(Menu menu)
+        {
+            if (menu == null) return null;
+            return new SousMenuResponseDTO
+            {
+                Id = menu.Id,
+                Title = menu.Title
+            };
+        }
+        public static PagesMenuResponseDTO ToPageDto(Page page)
+        {
+            if (page == null) return null;
+            return new PagesMenuResponseDTO
+            {
+                Id = page.Id,
+                Title = page.Title
+            };
+        }
+
+        public static UserMenuReponseDTO toUserDto(User user)
+        {
+            if (user == null) return null;
+            return new UserMenuReponseDTO
+            {
+                Id = user.Id,
+                username = user.Login
             };
         }
 
@@ -27,7 +65,9 @@ namespace CesiZen_API.Mapper
             {
                 Id = menu.Id,
                 Title = menu.Title,
-                Parent = menu.Parent,
+                Parent = ToParentDto(menu.Parent),
+                SousMenus = menu.SousMenus?.Select(ToSousMenuDto).ToList() ?? new(),
+                Pages = menu.Pages.Select(ToPageDto).ToList(),
                 Status = menu.Status
             };
         }

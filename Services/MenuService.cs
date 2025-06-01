@@ -10,20 +10,33 @@ namespace CesiZen_API.Services
     public class MenuService : IMenuService
     {
         private readonly AppDbContext _context;
+        private readonly IPageService _pageService;
 
-        public MenuService(AppDbContext context)
+        public MenuService(AppDbContext context, IPageService pageService)
         {
             _context = context;
+            _pageService = pageService;
         }
 
         public async Task<IEnumerable<Menu>> GetAllMenu()
         {
-            return await _context.Menu.ToListAsync();
+            return await _context.Menu
+                .Include(m => m.Parent)
+                .Include(m => m.SousMenus)
+                .Include(m => m.Pages)
+                .Include(m => m.User)
+                .ToListAsync();
         }
 
         public async Task<Menu> GetMenuById(int id)
         {
-            var menu = await _context.Menu.FindAsync(id);
+            var menu = await _context.Menu
+               .Include(m => m.Parent)
+               .Include(m => m.SousMenus)
+               .Include(m => m.Pages)
+               .Include(m => m.User)
+               .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menu == null)
                 throw new NotFoundException("Menu introuvable.");
             return menu;
@@ -47,12 +60,19 @@ namespace CesiZen_API.Services
                 }
             }
 
+            List<Page> pages = new();
+            if (newMenuDto.PagesId != null && newMenuDto.PagesId.Any())
+            {
+                pages = await _pageService.GetPagesByIds(newMenuDto.PagesId);
+            }
+
             Menu menu = new Menu
             {
                 Title = newMenuDto.Title,
                 User = user,
                 Status = 1,
-                Parent = parentMenu
+                Parent = parentMenu,
+                Pages = pages
             };
 
             _context.Menu.Add(menu);
@@ -80,6 +100,13 @@ namespace CesiZen_API.Services
 
                 menuExisting.Parent = parentMenu;
             }
+
+            if (menuDto.PagesId != null)
+            {
+                var newPages = await _pageService.GetPagesByIds(menuDto.PagesId);
+                menuExisting.Pages = newPages;
+            }
+
 
             await _context.SaveChangesAsync();
             return true;

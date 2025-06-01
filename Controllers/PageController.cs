@@ -20,7 +20,7 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> GetAllPages([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? filter = null)
         {
 
-            var (totalPages, pages) = await _pageService.GetAllAsync(pageNumber, pageSize, filter);
+            var (totalPages, pages) = await _pageService.GetAllPages(pageNumber, pageSize, filter);
 
             return Ok(new
             {
@@ -34,7 +34,7 @@ namespace CesiZen_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPageById(int id)
         {
-            var page = await _pageService.GetByIdAsync(id);
+            var page = await _pageService.GetPageById(id);
             if (page == null)
             {
                 return NotFound();
@@ -63,7 +63,7 @@ namespace CesiZen_API.Controllers
                 }
             }
 
-            Page createdPage = await _pageService.CreateAsync(newPage);
+            Page createdPage = await _pageService.CreatePage(newPage);
             return CreatedAtAction(nameof(GetPageById), new { id = createdPage.Id }, createdPage);
         }
 

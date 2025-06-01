@@ -7,6 +7,7 @@ using CesiZen_API.Services.Interfaces;
 using CesiZen_API.Data;
 using CesiZen_API.Middleware;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 DotNetEnv.Env.Load();
 
@@ -17,10 +18,20 @@ builder.Services.AddControllersWithViews();
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
+    options.UseMySql(
+        connectionString,
+        new MySqlServerVersion(new Version(8, 0, 3)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 2,                  // nombre max de retries
+            maxRetryDelay: TimeSpan.FromSeconds(3),  // délai max entre retries
+            errorNumbersToAdd: null             // liste des codes d’erreur supplémentaires
+        )
+    )
+);
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<AuthService>();
 
 
@@ -55,7 +66,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-
+//Dépendance ciruclaire sérialisation
+/*builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+*/
 builder.Services.AddAuthorization();
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
