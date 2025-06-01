@@ -39,7 +39,7 @@ namespace CesiZen_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
         {
-            var userId = User.GetUserId();
+            int? userId = User.GetUserId();
 
             if (userId == null)
                 return Unauthorized(new { message = "Utilisateur non authentifié" });
@@ -62,7 +62,17 @@ namespace CesiZen_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
         {
-            await _menuService.UpdateMenu(id, menuDto);
+            int? userId = User.GetUserId();
+
+            if (userId == null)
+                return Unauthorized(new { message = "Utilisateur non authentifié" });
+
+            var user = await _userService.GetUserById(userId.Value);
+            if (user == null)
+                return NotFound(new { message = "Utilisateur introuvable" });
+
+
+            await _menuService.UpdateMenu(user, id, menuDto);
             var updatedMenu = await _menuService.GetMenuById(id);
 
             return Ok(new

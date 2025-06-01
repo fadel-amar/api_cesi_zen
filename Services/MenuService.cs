@@ -80,37 +80,53 @@ namespace CesiZen_API.Services
             return menu;
         }
 
-        public async Task<bool> UpdateMenu(int id, UpdateMenuDto menuDto)
+        public async Task<bool> UpdateMenu(User user, int id, UpdateMenuDto menuDto)
         {
-            var menuExisting = await _context.Menu.FindAsync(id);
-            if (menuExisting == null)
+            if (menuDto is null)
+                throw new ArgumentNullException(nameof(menuDto));
+
+            var isDtoEmpty =
+                menuDto.Title == null &&
+                !menuDto.Status.HasValue &&
+                !menuDto.ParentId.HasValue &&
+                (menuDto.PagesId == null || !menuDto.PagesId.Any());
+
+            if (isDtoEmpty)
+                throw new BadRequestException("Aucune donnée à mettre à jour.");
+
+            var menu = await _context.Menu
+                .Include(m => m.Pages)
+                .Include(m => m.Parent)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (menu == null)
                 throw new NotFoundException("Ce menu n'existe pas.");
 
             if (menuDto.Title != null)
-                menuExisting.Title = menuDto.Title;
+                menu.Title = menuDto.Title;
 
             if (menuDto.Status.HasValue)
-                menuExisting.Status = menuDto.Status.Value;
+                menu.Status = menuDto.Status.Value;
 
-            if (menuDto.ParentId.HasValue)
+            if (menuDto.ParentId.HasValue && menuDto.ParentId.Value != menu.Parent?.Id)
             {
-                var parentMenu = await _context.Menu.FindAsync(menuDto.ParentId.Value);
-                if (parentMenu == null)
+                var parent = await _context.Menu.FindAsync(menuDto.ParentId.Value);
+                if (parent == null)
                     throw new NotFoundException("Le menu parent spécifié n'existe pas.");
-
-                menuExisting.Parent = parentMenu;
+                menu.Parent = parent;
             }
 
-            if (menuDto.PagesId != null)
+            if (menuDto.PagesId?.Any() == true)
             {
-                var newPages = await _pageService.GetPagesByIds(menuDto.PagesId);
-                menuExisting.Pages = newPages;
+                var pages = await _pageService.GetPagesByIds(menuDto.PagesId);
+                menu.Pages = pages;
             }
 
-
+            menu.User = user;
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<bool> DeleteMenu(int id)
         {
