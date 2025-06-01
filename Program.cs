@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using CesiZen_API.Services;
 using CesiZen_API.Services.Interfaces;
 using CesiZen_API.Data;
+using CesiZen_API.Middleware;
+using Microsoft.AspNetCore.Mvc;
 
 DotNetEnv.Env.Load();
 
@@ -55,6 +57,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return new BadRequestObjectResult(new
+            {
+                status = 400,
+                message = "Erreur de validation",
+                errors = errors
+            });
+        };
+    });
 
 var app = builder.Build();
 
@@ -68,7 +90,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
