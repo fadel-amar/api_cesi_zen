@@ -130,12 +130,24 @@ namespace CesiZen_API.Services
 
         public async Task<bool> DeleteMenu(int id)
         {
-            var menu = await _context.Menu.FindAsync(id);
+            var menu = await _context.Menu
+                .Include(m => m.SousMenus)
+                .Include(m => m.Pages)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (menu == null)
                 throw new NotFoundException("Le menu n'a pas été trouvé.");
 
+            foreach (var sousMenu in menu.SousMenus.ToList())
+            {
+                sousMenu.Parent = null;
+            }
+
+            menu.Pages.Clear();
+
             _context.Menu.Remove(menu);
             await _context.SaveChangesAsync();
+
             return true;
         }
     }
