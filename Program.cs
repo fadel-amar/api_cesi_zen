@@ -3,20 +3,37 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CesiZen_API.Services;
+using CesiZen_API.Services.Interfaces;
+using CesiZen_API.Data;
+using CesiZen_API.Middleware;
+using Microsoft.AspNetCore.Mvc;
+using CesiZen_API.ModelBlinders;
 
 DotNetEnv.Env.Load();
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 3))));
-
+    options.UseMySql(
+        connectionString,
+        new MySqlServerVersion(new Version(8, 0, 3)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 2,                  // nombre max de retries
+            maxRetryDelay: TimeSpan.FromSeconds(3),  // délai max entre retries
+            errorNumbersToAdd: null             // liste des codes d’erreur supplémentaires
+        )
+    )
+);
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<AuthService>();
+
 
 var key = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY"));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -32,9 +49,58 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(key)
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsync("{\"message\":\"Authentification requise ou token invalide\"}");
+            },
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = 403;
+                context.Response.ContentType = "application/json";
+                return context.Response.WriteAsync("{\"message\":\"Accès interdit : rôle administrateur requis\"}");
+            }
+        };
     });
-
+//Dépendance ciruclaire sérialisation
+/*builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+*/
 builder.Services.AddAuthorization();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return new BadRequestObjectResult(new
+            {
+                status = 400,
+                message = "Erreur de validation",
+                errors = errors
+            });
+        };
+    });
+/*
+builder.Services.AddControllers(options =>
+{
+    options.ModelBinderProviders.Insert(0, new CurrentUserModelBinderProvider());
+});
+*/
 
 var app = builder.Build();
 
@@ -48,7 +114,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -56,10 +122,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-/*using (var scope = app.Services.CreateScope())
+
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
     FakerData.SeedAllData(context);
-}*/
+}
 app.Run();

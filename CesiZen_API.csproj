@@ -27,6 +27,11 @@
 
 	<ItemGroup>
 	  <Folder Include="Migrations\" />
+	  <Folder Include="Infrastructure\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="DTO\Response\UserResponseDTO.cs" />
 	</ItemGroup>
 
 </Project>
