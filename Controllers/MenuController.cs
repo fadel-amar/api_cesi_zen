@@ -1,6 +1,7 @@
 ﻿using CesiZen_API.DTO;
 using CesiZen_API.Helper;
 using CesiZen_API.Mapper;
+using CesiZen_API.ModelBlinders;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -13,12 +14,10 @@ namespace CesiZen_API.Controllers
     public class MenuController : ControllerBase
     {
         private readonly IMenuService _menuService;
-        private readonly IUserService _userService;
 
         public MenuController(IMenuService menuService, IUserService userService)
         {
             _menuService = menuService ?? throw new ArgumentNullException(nameof(menuService));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         [HttpGet]
@@ -37,16 +36,10 @@ namespace CesiZen_API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateMenu([FromBody] CreateMenuDto menuDto)
+        public async Task<IActionResult> CreateMenu([CurrentUser] User user, [FromBody] CreateMenuDto menuDto)
         {
-            int? userId = User.GetUserId();
-
-            if (userId == null)
-                return Unauthorized(new { message = "Utilisateur non authentifié" });
-
-            var user = await _userService.GetUserById(userId.Value);
             if (user == null)
-                return NotFound(new { message = "Utilisateur introuvable" });
+                return Unauthorized(new { message = "Utilisateur non authentifié" });
 
             var menu = await _menuService.CreateMenu(menuDto, user);
 
@@ -60,16 +53,11 @@ namespace CesiZen_API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMenu(int id, [FromBody] UpdateMenuDto menuDto)
+        public async Task<IActionResult> UpdateMenu(int id, [CurrentUser] User user, [FromBody] UpdateMenuDto menuDto)
         {
-            int? userId = User.GetUserId();
 
-            if (userId == null)
-                return Unauthorized(new { message = "Utilisateur non authentifié" });
-
-            var user = await _userService.GetUserById(userId.Value);
             if (user == null)
-                return NotFound(new { message = "Utilisateur introuvable" });
+                return Unauthorized(new { message = "Utilisateur non authentifié" });
 
 
             await _menuService.UpdateMenu(user, id, menuDto);

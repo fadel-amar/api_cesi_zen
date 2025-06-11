@@ -48,5 +48,15 @@ namespace CesiZen_API.Mappers
                 TotalPages = (int)Math.Ceiling((double)totalNumberUser / pageSize)
             };
         }
+
+        public static UserShortReponseDTO toUserDto(User user)
+        {
+            if (user == null) return null;
+            return new UserShortReponseDTO
+            {
+                Id = user.Id,
+                username = user.Login
+            };
+        }
     }
 }

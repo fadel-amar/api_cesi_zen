@@ -1,4 +1,5 @@
-﻿using CesiZen_API.Models;
+﻿using CesiZen_API.DTO.Response.userResponse;
+using CesiZen_API.Models;
 
 namespace CesiZen_API.DTO.Response.MenuResponse
 {
@@ -21,7 +22,7 @@ namespace CesiZen_API.DTO.Response.MenuResponse
         public ParentMenuResponseDTO? Parent { get; set; }
         public List<PagesMenuResponseDTO>? Pages { get; set; }
         public List<SousMenuResponseDTO>? SousMenus { get; set; }
-        public UserMenuReponseDTO User { get; set; }
+        public UserShortReponseDTO User { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -48,11 +49,5 @@ namespace CesiZen_API.DTO.Response.MenuResponse
         public string Title { get; set; }
     }
 
-    public class UserMenuReponseDTO
-    {
-        public int Id { get; set; }
-        public string username { get; set; }
-
-    }
 
 }

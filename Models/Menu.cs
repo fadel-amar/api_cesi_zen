@@ -5,6 +5,7 @@ namespace CesiZen_API.Models
 {
     public class Menu
     {
+        [Key]
         public int Id { get; set; }
 
         [MaxLength(35)]

@@ -1,16 +1,15 @@
 ﻿using CesiZen_API.DTO;
 using CesiZen_API.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CesiZen_API.Services.Interfaces
 {
     public interface IPageService
     {
-        Task<(int totalNumberPages, List<Page> pages)> GetAllPages(int pageNumber, int pageSize, string filter);
+        Task<IEnumerable<Page>> GetAllPages();
         Task<List<Page>> GetPagesByIds( List<int> pagesID);
         Task<Page> GetPageById(int id);
-        Task<Page> CreatePage(Page newPage);
-        Task<bool> UpdatePage(Page newPage);
+        Task<Page> CreatePage(CreatePageDto newPageDto, User user);
+        Task<bool> UpdatePage(int id, UpdatePageDto updatedPage, User user);
         Task<bool> DeletePage(int id);
     }
 }

@@ -70,6 +70,16 @@ namespace CesiZen_API.Services
             await _context.SaveChangesAsync();
             return existing;
         }
+        public async Task<User> UpdateMyAccount(User user, UpdateMyAccontDTO updateMyAccontDTO)
+        {
+            user.Login = updateMyAccontDTO.Login ?? user.Login;
+            user.Email = updateMyAccontDTO.Email ?? user.Email;
+            user.Disabled = updateMyAccontDTO.Disabled ?? user.Disabled;
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.User.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
 
         public async Task<bool> DeleteUser(int id)
         {

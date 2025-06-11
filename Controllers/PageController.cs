@@ -1,7 +1,12 @@
 ﻿using System.ComponentModel;
 using CesiZen_API.DTO;
+using CesiZen_API.Helper;
+using CesiZen_API.Mapper;
+using CesiZen_API.ModelBlinders;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CesiZen_API.Controllers
@@ -11,69 +16,65 @@ namespace CesiZen_API.Controllers
     public class PageController : ControllerBase
     {
         private readonly IPageService _pageService;
-        PageController(IPageService pageService)
+        public PageController(IPageService pageService)
         {
             _pageService = pageService;
         }
 
         [HttpGet()]
-        public async Task<IActionResult> GetAllPages([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? filter = null)
+        public async Task<IActionResult> GetAllPages()
         {
-
-            var (totalPages, pages) = await _pageService.GetAllPages(pageNumber, pageSize, filter);
-
-            return Ok(new
-            {
-                Pages = pages,
-                TotalPages = totalPages,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-            });
+            IEnumerable<Page>? pages = await _pageService.GetAllPages();
+            return Ok(PageMapper.ToResponseListDto(pages));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPageById(int id)
         {
-            var page = await _pageService.GetPageById(id);
-            if (page == null)
-            {
-                return NotFound();
-            }
-            return Ok(page);
+            Page page = await _pageService.GetPageById(id);
+            return Ok(PageMapper.ToResponseFullDto(page));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePage([FromBody] CreatePageDto createPageDto)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreatePage([FromBody] CreatePageDto createPageDto, [CurrentUser] User user)
         {
-            Page newPage = new Page
-            {
-                Title = createPageDto.Title,
-                Content = createPageDto.Content,
-            };
-            if (createPageDto.link != null)
-            {
-                newPage.link = createPageDto.link;
-                if (createPageDto.type_link != null)
-                {
-                    newPage.type_link = createPageDto.type_link;
-                }
-                else
-                {
-                    return BadRequest("Le type de lien est obligatoire");
-                }
-            }
 
-            Page createdPage = await _pageService.CreatePage(newPage);
-            return CreatedAtAction(nameof(GetPageById), new { id = createdPage.Id }, createdPage);
+            Page createdPage = await _pageService.CreatePage(createPageDto, user);
+
+            return StatusCode(201, new
+            {
+                status = 201,
+                message = "Le menu a bien été créé",
+                data = PageMapper.ToResponseFullDto(createdPage)
+            });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePage(int id, [FromBody] Page page)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdatePage(int id, [FromBody] UpdatePageDto updatedPageDto, [CurrentUser] User user)
         {
-            return Ok();
+            bool updated = await _pageService.UpdatePage(id, updatedPageDto, user);
+            Page updatePage = await _pageService.GetPageById(id);
+            return StatusCode(200, new
+            {
+                status = 200,
+                message = "Le menu a bien été modifié",
+                data = PageMapper.ToResponseFullDto(updatePage)
+            });
         }
 
 
-
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeletePage(int id)
+        {
+            await _pageService.DeletePage(id);
+            return StatusCode(204, new
+            {
+                status = 204,
+                message = "La page a bien été supprimée"
+            });
+        }
     }
 }

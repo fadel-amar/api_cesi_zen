@@ -9,7 +9,9 @@ namespace CesiZen_API.Services.Interfaces
         Task<(IEnumerable<User> Users, int TotalCount)> GetAllUsers(int pageNumber = 1, int pageSize = 10, string? filter = null);
         Task<User> CreateUser(User user);
         Task<User?> UpdateUser(int id, PatchDTO userDto);
+        Task<User?> UpdateMyAccount(User user, UpdateMyAccontDTO updateMyAccontDTO);
         Task<bool> DeleteUser(int id);
         Task<User?> GetUserByIdentifier(string identifier);
+
     }
 }

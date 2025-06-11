@@ -2,6 +2,7 @@
 using CesiZen_API.Services.Interfaces;
 using CesiZen_API.Helper.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using CesiZen_API.DTO;
 
 namespace CesiZen_API.Services
 {
@@ -14,24 +15,12 @@ namespace CesiZen_API.Services
             _context = context;
         }
 
-        public async Task<(int totalNumberPages, List<Page> pages)> GetAllPages(int pageNumber, int pageSize, string filter)
+        public async Task<IEnumerable<Page>> GetAllPages()
         {
-            if (pageNumber <= 0 || pageSize <= 0)
-                throw new BadRequestException("Le numéro de page et la taille doivent être supérieurs à zéro.");
-
-            IQueryable<Page> query = _context.Page.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(filter))
-                query = query.Where(p => p.Title.Contains(filter));
-
-            int totalPages = await query.CountAsync();
-
-            List<Page> pages = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+            var pages = await _context.Page
                 .ToListAsync();
 
-            return (totalPages, pages);
+            return pages;
         }
 
         public async Task<List<Page>> GetPagesByIds(List<int> pagesId)
@@ -40,6 +29,7 @@ namespace CesiZen_API.Services
                 throw new BadRequestException("La liste des IDs de pages ne peut pas être vide.");
 
             var pages = await _context.Page
+                .Include(p => p.User)
                 .Where(p => pagesId.Contains(p.Id))
                 .ToListAsync();
 
@@ -51,33 +41,48 @@ namespace CesiZen_API.Services
 
         public async Task<Page> GetPageById(int id)
         {
-            var page = await _context.Page.FindAsync(id);
+            var page = await _context.Page
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (page == null)
-                throw new NotFoundException($"La page avec l'ID {id} n'existe pas.");
+                throw new NotFoundException("Cette page n'a pas été trouvée.");
 
             return page;
         }
 
-        public async Task<Page> CreatePage(Page newPage)
+        public async Task<Page> CreatePage(CreatePageDto newPageDto, User user)
         {
-            if (string.IsNullOrWhiteSpace(newPage.Title))
-                throw new BadRequestException("Le titre de la page est obligatoire.");
+            Page newPage = new Page
+            {
+                Title = newPageDto.Title,
+                Content = newPageDto.Content,
+                User = user
+            };
+            if (newPageDto.link != null)
+            {
+                newPage.link = newPageDto.link;
+            }
 
             _context.Page.Add(newPage);
             await _context.SaveChangesAsync();
             return newPage;
         }
 
-        public async Task<bool> UpdatePage(Page newPage)
+        public async Task<bool> UpdatePage(int id, UpdatePageDto updatedPage, User user)
         {
-            var existing = await _context.Page.FindAsync(newPage.Id);
+            if (updatedPage == null)
+                throw new BadRequestException("Le DTO de mise à jour ne peut pas être null.");
+
+            Page? existing = await _context.Page.FindAsync(id);
             if (existing == null)
                 throw new NotFoundException("La page à modifier n'existe pas.");
 
-            existing.Title = newPage.Title;
-            existing.Menu = newPage.Menu;
-            existing.Content = newPage.Content;
-            existing.Visibility = newPage.Visibility;
+            existing.Title = updatedPage.Title ?? existing.Title;
+            existing.Content = updatedPage.Content ?? existing.Content;
+            existing.Visibility = updatedPage.Visibility ?? existing.Visibility;
+            existing.link = updatedPage.Link ?? existing.link;
+            existing.User = user;
 
             await _context.SaveChangesAsync();
             return true;

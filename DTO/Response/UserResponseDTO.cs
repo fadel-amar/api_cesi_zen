@@ -30,4 +30,10 @@ namespace CesiZen_API.DTO.Response.userResponse
         public int TotalNumberUser { get; set; }
         public int TotalPages { get; set; }
     }
+    public class UserShortReponseDTO
+    {
+        public int Id { get; set; }
+        public string username { get; set; }
+
+    }
 }

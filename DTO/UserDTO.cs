@@ -36,4 +36,17 @@ namespace CesiZen_API.DTO
         public bool? Disabled { get; set; }
         public bool? Banned { get; set; }
     }
+
+    public class UpdateMyAccontDTO
+    {
+        public string? Login { get; set; }
+        public string? Email { get; set; }
+        public bool? Disabled { get; set; }
+    }
+
+    public class resetMyPasswordDTO
+    {
+        public required string Password { get; set; }
+        public required string ConfirmPasswords { get; set; }
+    }
 }

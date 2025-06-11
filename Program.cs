@@ -7,7 +7,7 @@ using CesiZen_API.Services.Interfaces;
 using CesiZen_API.Data;
 using CesiZen_API.Middleware;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
+using CesiZen_API.ModelBlinders;
 
 DotNetEnv.Env.Load();
 
@@ -53,7 +53,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnChallenge = context =>
             {
-                context.HandleResponse(); 
+                context.HandleResponse();
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
                 return context.Response.WriteAsync("{\"message\":\"Authentification requise ou token invalide\"}");
@@ -95,6 +95,12 @@ builder.Services.AddControllers()
             });
         };
     });
+/*
+builder.Services.AddControllers(options =>
+{
+    options.ModelBinderProviders.Insert(0, new CurrentUserModelBinderProvider());
+});
+*/
 
 var app = builder.Build();
 
@@ -116,11 +122,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-/*
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
     FakerData.SeedAllData(context);
-}*/
+}
 app.Run();

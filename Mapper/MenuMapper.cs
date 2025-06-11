@@ -1,4 +1,5 @@
 ﻿using CesiZen_API.DTO.Response.MenuResponse;
+using CesiZen_API.DTO.Response.userResponse;
 using CesiZen_API.Models;
 
 namespace CesiZen_API.Mapper
@@ -49,10 +50,10 @@ namespace CesiZen_API.Mapper
             };
         }
 
-        public static UserMenuReponseDTO toUserDto(User user)
+        public static UserShortReponseDTO toUserDto(User user)
         {
             if (user == null) return null;
-            return new UserMenuReponseDTO
+            return new UserShortReponseDTO
             {
                 Id = user.Id,
                 username = user.Login

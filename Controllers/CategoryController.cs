@@ -1,6 +1,7 @@
 ﻿using CesiZen_API.DTO;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CesiZen_API.Controllers
@@ -48,6 +49,7 @@ namespace CesiZen_API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO.CreateCategoryDto categoryDto)
         {
             Category category = new Category { Name = categoryDto.Name };
@@ -61,6 +63,7 @@ namespace CesiZen_API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO.UpdateCategoryDto categoryDto)
         {
             Category? category = await _categoryService.GetByIdAsync(id);
@@ -82,11 +85,12 @@ namespace CesiZen_API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             bool deleted = await _categoryService.DeleteAsync(id);
             if (!deleted)
-                return NotFound(new { status = 404 , message = $"Impossible de supprimer. Catégorie introuvable." });
+                return NotFound(new { status = 404, message = $"Impossible de supprimer. Catégorie introuvable." });
 
             return NoContent();
         }
