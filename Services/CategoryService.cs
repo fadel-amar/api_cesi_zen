@@ -1,4 +1,5 @@
-﻿using CesiZen_API.Models;
+﻿using CesiZen_API.Helper.Exceptions;
+using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,24 +14,27 @@ namespace CesiZen_API.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllCategories()
         {
             return await _context.Category.ToListAsync();
         }
 
-        public async Task<Category> GetByIdAsync(int id)
+        public async Task<Category> GetCategoryById(int id)
         {
-            return await _context.Category.FindAsync(id);
+            Category? caategory =  await _context.Category.FindAsync(id);
+            if (caategory == null)
+                throw new NotFoundException("La catégorie n'as pas été trouvé");
+            return caategory;
         }
 
-        public async Task<Category> CreateAsync(Category category)
+        public async Task<Category> CreateCategory(Category category)
         {
             _context.Category.Add(category);
             await _context.SaveChangesAsync();
             return category;
         }
 
-        public async Task<bool> UpdateAsync(Category category)
+        public async Task<bool> UpdateCategory(Category category)
         {
             var existing = await _context.Category.FindAsync(category.Id);
             if (existing == null)
@@ -42,7 +46,7 @@ namespace CesiZen_API.Services
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteCategory(int id)
         {
             var category = await _context.Category.FindAsync(id);
             if (category == null) return false;

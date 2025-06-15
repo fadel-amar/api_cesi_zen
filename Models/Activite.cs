@@ -11,21 +11,32 @@ namespace CesiZen_API.Models
         public required string Title { get; set; }
 
         [Required]
-        public TimeSpan Duree { get; set; }
+        [Range(1, 120)] // Durée en minutes, max = 2h
+        public int Duree { get; set; }
 
         [MaxLength(255)]
         [Required]
         public required string Description { get; set; }
 
+        [MaxLength(50)]
         [Required]
         public required string TypeActitvity { get; set; }
 
+        [MaxLength(2083)]
         [Required]
-        public required string url { get; set; }
+        [Url]
+        public required string ImagePresentation { get; set; }
 
-        public required int Status { get; set; }
+        [MaxLength(2083)]
+        [Required]
+        [Url]
+        public required string Url { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public Boolean Status { get; set; } = false;
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
         [Required]
         public required Category Category { get; set; }
@@ -34,4 +45,3 @@ namespace CesiZen_API.Models
         public required User User { get; set; }
     }
 }
-

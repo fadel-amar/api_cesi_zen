@@ -23,7 +23,7 @@ namespace CesiZen_API.DTO
         public string? Title { get; set; }
         public List<int>? PagesId { get; set; }
 
-        public int? Status { get; set; }
+        public bool? Status { get; set; }
 
         public int? ParentId { get; set; }
     }

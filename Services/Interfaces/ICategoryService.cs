@@ -4,10 +4,10 @@ namespace CesiZen_API.Services.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<Category>> GetAllAsync();
-        Task<Category> GetByIdAsync(int id);
-        Task<Category> CreateAsync(Category category);
-        Task<bool> UpdateAsync(Category category);
-        Task<bool> DeleteAsync(int id);
+        Task<IEnumerable<Category>> GetAllCategories();
+        Task<Category> GetCategoryById(int id);
+        Task<Category> CreateCategory(Category category);
+        Task<bool> UpdateCategory(Category category);
+        Task<bool> DeleteCategory(int id);
     }
 }

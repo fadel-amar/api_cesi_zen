@@ -21,7 +21,7 @@ namespace CesiZen_API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCategory()
         {
-            IEnumerable<Category>? categories = await _categoryService.GetAllAsync();
+            IEnumerable<Category>? categories = await _categoryService.GetAllCategories();
             if (categories == null)
             {
                 return NotFound(new
@@ -37,7 +37,7 @@ namespace CesiZen_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
-            Category? category = await _categoryService.GetByIdAsync(id);
+            Category? category = await _categoryService.GetCategoryById(id);
             if (category == null)
                 return NotFound(new
                 {
@@ -53,7 +53,7 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO.CreateCategoryDto categoryDto)
         {
             Category category = new Category { Name = categoryDto.Name };
-            var created = await _categoryService.CreateAsync(category);
+            var created = await _categoryService.CreateCategory(category);
             return StatusCode(201, new
             {
                 status = 201,
@@ -66,7 +66,7 @@ namespace CesiZen_API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO.UpdateCategoryDto categoryDto)
         {
-            Category? category = await _categoryService.GetByIdAsync(id);
+            Category? category = await _categoryService.GetCategoryById(id);
             if (category == null)
             {
                 return NotFound(new
@@ -77,7 +77,7 @@ namespace CesiZen_API.Controllers
             }
 
             category.Name = categoryDto.Name;
-            bool updated = await _categoryService.UpdateAsync(category);
+            bool updated = await _categoryService.UpdateCategory(category);
             if (!updated)
                 return BadRequest(new { status = 400, message = $"Impossible de mettre à jour. Catégorie {id} introuvable." });
 
@@ -88,7 +88,7 @@ namespace CesiZen_API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            bool deleted = await _categoryService.DeleteAsync(id);
+            bool deleted = await _categoryService.DeleteCategory(id);
             if (!deleted)
                 return NotFound(new { status = 404, message = $"Impossible de supprimer. Catégorie introuvable." });
 
