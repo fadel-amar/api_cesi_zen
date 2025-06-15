@@ -1,4 +1,4 @@
-# Ignorer les fichiers/dossiers générés par Visual Studio et Docker
+# Ignorer les fichiers/dossiers gï¿½nï¿½rï¿½s par Visual Studio et Docker
 .vs/
 bin/
 BDD/
@@ -17,3 +17,5 @@ appsettings.Development.json
 # Ignorer les sauvegardes ou fichiers temporaires
 *.tmp
 *.bak
+/wwwroot/images
+/wwwroot/media

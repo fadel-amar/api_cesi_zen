@@ -52,15 +52,22 @@ namespace CesiZen_API.Data
         private static List<Activite> GenerateActivites(AppDbContext dbContext, List<User> users, List<Category> categories)
         {
             var activiteFaker = new Faker<Activite>()
-                .RuleFor(a => a.Title, f => f.Lorem.Sentence(3))
-                .RuleFor(a => a.Duree, f => f.Date.Timespan(TimeSpan.FromMinutes(90)))
-                .RuleFor(a => a.Description, f => f.Lorem.Sentence(10))
-                .RuleFor(a => a.TypeActitvity, f => f.PickRandom(new[] { "Yoga", "Meditation", "Course", "Détente" }))
-                .RuleFor(a => a.url, f => f.Internet.Url())
-                .RuleFor(a => a.Status, f => f.PickRandom(new[] { Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
-                .RuleFor(a => a.CreatedAt, f => f.Date.Past())
-                .RuleFor(a => a.Category, f => f.PickRandom(categories))
-                .RuleFor(a => a.User, f => f.PickRandom(users));
+
+            .RuleFor(a => a.Title, f =>
+            {
+                var sentence = f.Lorem.Sentence(3);
+                return sentence.Length >= 30 ? sentence.Substring(0, 30) : sentence.PadRight(30).Substring(0, 30);
+            })
+            .RuleFor(a => a.Duree, f => f.Random.Int(1, 120))
+            .RuleFor(a => a.Description, f => f.Lorem.Sentence(10))
+            .RuleFor(a => a.Description, f => f.Lorem.Sentence(10))
+            .RuleFor(a => a.TypeActitvity, f => f.PickRandom(new[] { "Yoga", "Meditation", "Course", "Détente" }))
+            .RuleFor(a => a.Url, f => f.Internet.Url())
+            .RuleFor(a => a.ImagePresentation, f => f.Internet.Url())
+            .RuleFor(a => a.Status, f => f.PickRandom(new[] { Constants.STATUS_ACTIVE, Constants.STATUS_INACTIVE }))
+            .RuleFor(a => a.CreatedAt, f => f.Date.Past())
+            .RuleFor(a => a.Category, f => f.PickRandom(categories))
+            .RuleFor(a => a.User, f => f.PickRandom(users));
 
 
             var activites = activiteFaker.Generate(20);
@@ -118,8 +125,8 @@ namespace CesiZen_API.Data
                     {
                         User = user,
                         Activite = activite,
-                        isFavorite = random.NextDouble() > 0.5,
-                        isToLater = random.NextDouble() > 0.5
+                        IsFavorite = random.NextDouble() > 0.5,
+                        IsToLater = random.NextDouble() > 0.5
                     });
                     count++;
                 }

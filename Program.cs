@@ -32,6 +32,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IPageService, PageService>();
+builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<AuthService>();
 
 
@@ -123,10 +124,12 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
-using (var scope = app.Services.CreateScope())
+/*using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
     FakerData.SeedAllData(context);
-}
+}*/
+app.UseStaticFiles();
+
 app.Run();

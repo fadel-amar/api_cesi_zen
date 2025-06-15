@@ -70,7 +70,6 @@ namespace CesiZen_API.Services
             {
                 Title = newMenuDto.Title,
                 User = user,
-                Status = 1,
                 Parent = parentMenu,
                 Pages = pages
             };

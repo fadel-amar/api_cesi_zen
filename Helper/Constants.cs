@@ -2,15 +2,19 @@
 {
     public static class Constants
     {
-        public const int STATUS_ACTIVE = 1;
-        public const int STATUS_INACTIVE = 0;
+        public const Boolean STATUS_ACTIVE = true;
+        public const Boolean  STATUS_INACTIVE = false;
 
         public const string ROLE_ADMIN = "Admin";
         public const string ROLE_USER = "User";
 
-
-        public const string STATUT_ATTENTE = "En attente";
-        public const string STATUT_PAYE = "Payé";
-        public const string STATUT_RETARD = "En retard";
+        public static readonly Dictionary<int, string> ACTIVITY_TYPES = new()
+           {
+               { 1, "Yoga" },
+               { 2, "ASMR" },
+               { 3, "Sonore" },
+               { 4, "Étirement" },
+               {5, "Méditation" }
+           };
     }
 }

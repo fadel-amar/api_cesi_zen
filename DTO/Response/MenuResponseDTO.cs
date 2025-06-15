@@ -10,14 +10,14 @@ namespace CesiZen_API.DTO.Response.MenuResponse
         public ParentMenuResponseDTO? Parent { get; set; }
         public List<PagesMenuResponseDTO>? Pages { get; set; }
         public List<SousMenuResponseDTO>? SousMenus { get; set; }
-        public required int Status { get; set; }
+        public required bool Status { get; set; }
     }
 
     public class FullMenuResponseDTO
     {
         public required int Id { get; set; }
         public required string Title { get; set; }
-        public int Status { get; set; }
+        public bool Status { get; set; }
         public DateTime DateCreation { get; set; }
         public ParentMenuResponseDTO? Parent { get; set; }
         public List<PagesMenuResponseDTO>? Pages { get; set; }

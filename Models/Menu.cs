@@ -11,7 +11,7 @@ namespace CesiZen_API.Models
         [MaxLength(35)]
         [Required]
         public string Title { get; set; }
-        public int Status { get; set; }
+        public bool Status { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Menu? Parent { get; set; }
         public ICollection<Menu> SousMenus { get; set; } = new List<Menu>();

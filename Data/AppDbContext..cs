@@ -24,6 +24,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Menu>();
         modelBuilder.Entity<Page>();
         modelBuilder.Entity<Activite>();
-        modelBuilder.Entity<SaveActivity>().HasKey(sa => new { sa.UserId, sa.ActiviteId });
+        modelBuilder.Entity<SaveActivity>()
+            .HasKey(sa => new { sa.UserId, sa.ActiviteId });
     }
-}   
+}
