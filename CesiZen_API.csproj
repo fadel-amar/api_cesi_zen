@@ -29,8 +29,8 @@
 	  <Folder Include="Migrations\" />
 	  <Folder Include="Infrastructure\" />
 	  <Folder Include="ModelBlinders\" />
-	  <Folder Include="wwwroot\images\" />
-	  <Folder Include="wwwroot\media\" />
+	  <Folder Include="wwwroot\NewFolder1\" />
+	  <Folder Include="wwwroot\NewFolder\" />
 	</ItemGroup>
 
 	<ItemGroup>

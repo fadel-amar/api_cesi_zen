@@ -8,6 +8,7 @@ using CesiZen_API.Data;
 using CesiZen_API.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using CesiZen_API.ModelBlinders;
+using Microsoft.Extensions.Options;
 
 DotNetEnv.Env.Load();
 
@@ -96,12 +97,20 @@ builder.Services.AddControllers()
             });
         };
     });
-/*
-builder.Services.AddControllers(options =>
+
+builder.Services.AddCors(options =>
 {
-    options.ModelBinderProviders.Insert(0, new CurrentUserModelBinderProvider());
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "http://localhost:4173"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
 });
-*/
+
 
 var app = builder.Build();
 
@@ -115,6 +124,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseCors("AllowFrontend");
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -123,8 +133,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
-/*using (var scope = app.Services.CreateScope())
+/*
+using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();

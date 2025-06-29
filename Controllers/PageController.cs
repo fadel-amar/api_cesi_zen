@@ -24,14 +24,16 @@ namespace CesiZen_API.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetAllPages()
         {
-            IEnumerable<Page>? pages = await _pageService.GetAllPages();
+            bool isAdmin = User.IsInRole("Admin");
+            IEnumerable<Page>? pages = await _pageService.GetAllPages(isAdmin);
             return Ok(PageMapper.ToResponseListDto(pages));
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPageById(int id)
         {
-            Page page = await _pageService.GetPageById(id);
+            bool isAdmin = User.IsInRole("Admin");
+            Page page = await _pageService.GetPageById(id, isAdmin);
             return Ok(PageMapper.ToResponseFullDto(page));
         }
 
@@ -55,7 +57,7 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> UpdatePage(int id, [FromBody] UpdatePageDto updatedPageDto, [CurrentUser] User user)
         {
             bool updated = await _pageService.UpdatePage(id, updatedPageDto, user);
-            Page updatePage = await _pageService.GetPageById(id);
+            Page updatePage = await _pageService.GetPageById(id, true);
             return StatusCode(200, new
             {
                 status = 200,
@@ -70,11 +72,7 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> DeletePage(int id)
         {
             await _pageService.DeletePage(id);
-            return StatusCode(204, new
-            {
-                status = 204,
-                message = "La page a bien été supprimée"
-            });
+            return StatusCode(204);
         }
     }
 }

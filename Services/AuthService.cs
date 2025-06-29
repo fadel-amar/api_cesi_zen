@@ -39,7 +39,15 @@ namespace CesiZen_API.Services
 
             if (existing == null || !existing.VerifyPassword(loginDto.Password))
             {
-                return null;
+                throw new UnauthorizedAccessException("Identifiants invalides");
+            }
+            if(existing.Banned)
+            {
+                throw new UnauthorizedAccessException("Votre compte à été banni");
+            }
+            if(existing.Disabled)
+            {
+                throw new UnauthorizedAccessException("Votre compte à été désactiver Veuillez conctacter le service CesiZen");
             }
 
             return GenerateJwtToken(existing);

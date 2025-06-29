@@ -18,7 +18,7 @@ namespace CesiZen_API.Models
         [MaxLength(50)]
         public string? type_link { get; set; }
 
-        public bool Visibility { get; set; } = true;
+        public bool Visibility { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

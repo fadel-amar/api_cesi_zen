@@ -5,8 +5,15 @@ namespace CesiZen_API.Mapper
 {
     public static class ActitvityMapper
     {
-        public static FullActivityResponseDTO toResponseFullDTO(Activite activity)
+        public static FullActivityResponseDTO toResponseFullDTO(Activite activity, int? userId = null)
         {
+            SaveActivity? save = null;
+            if (userId != null)
+            {
+                save = activity.SavedActivities.FirstOrDefault(s => s.UserId == userId);
+
+            }
+
             return new FullActivityResponseDTO
             {
                 Id = activity.Id,
@@ -20,7 +27,9 @@ namespace CesiZen_API.Mapper
                 Category = activity.Category.Name,
                 User = activity.User.Id,
                 CreatedAt = activity.CreatedAt,
-                UpdatedAt = activity.UpdatedAt
+                UpdatedAt = activity.UpdatedAt,
+                IsFavorite = save?.IsFavorite ?? false,
+                IsToLater = save?.IsToLater ?? false
             };
         }
 

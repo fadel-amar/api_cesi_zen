@@ -1,4 +1,6 @@
 ﻿using CesiZen_API.DTO;
+using CesiZen_API.Mapper;
+using CesiZen_API.ModelBlinders;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,39 +23,24 @@ namespace CesiZen_API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCategory()
         {
-            IEnumerable<Category>? categories = await _categoryService.GetAllCategories();
-            if (categories == null)
-            {
-                return NotFound(new
-                {
-                    status = 404,
-                    message = "Aucune catégorie a été trouvé"
-                });
-            }
-
-            return Ok(categories);
+            bool isAdmin = User.IsInRole("Admin");
+            IEnumerable<Category>? categories = await _categoryService.GetAllCategories(isAdmin);
+            return Ok(new { categories = CategoryMapper.ToResponseListDto(categories) });
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
-            Category? category = await _categoryService.GetCategoryById(id);
-            if (category == null)
-                return NotFound(new
-                {
-                    status = 404,
-                    message = "Ce catégorie n'a pas été trouvé"
-                });
-
-            return Ok(category);
+            bool isAdmin = User.IsInRole("Admin");
+            Category category = await _categoryService.GetCategoryById(id, isAdmin);
+            return Ok(CategoryMapper.ToResponseFullDto(category));
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateCategory([FromBody] CategoryDTO.CreateCategoryDto categoryDto)
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDto categoryDto, [CurrentUser] User user)
         {
-            Category category = new Category { Name = categoryDto.Name };
-            var created = await _categoryService.CreateCategory(category);
+            var created = await _categoryService.CreateCategory(user, categoryDto);
             return StatusCode(201, new
             {
                 status = 201,
@@ -64,23 +51,9 @@ namespace CesiZen_API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDTO.UpdateCategoryDto categoryDto)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto categoryDto, [CurrentUser] User user)
         {
-            Category? category = await _categoryService.GetCategoryById(id);
-            if (category == null)
-            {
-                return NotFound(new
-                {
-                    status = 404,
-                    message = "Ce catégorie n'a pas été trouvé"
-                });
-            }
-
-            category.Name = categoryDto.Name;
-            bool updated = await _categoryService.UpdateCategory(category);
-            if (!updated)
-                return BadRequest(new { status = 400, message = $"Impossible de mettre à jour. Catégorie {id} introuvable." });
-
+            bool updated = await _categoryService.UpdateCategory(id, user, categoryDto);
             return NoContent();
         }
 
@@ -89,9 +62,6 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             bool deleted = await _categoryService.DeleteCategory(id);
-            if (!deleted)
-                return NotFound(new { status = 404, message = $"Impossible de supprimer. Catégorie introuvable." });
-
             return NoContent();
         }
     }
