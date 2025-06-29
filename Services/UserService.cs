@@ -1,6 +1,8 @@
 ﻿using CesiZen_API.DTO;
+using CesiZen_API.Helper.Exceptions;
 using CesiZen_API.Models;
 using CesiZen_API.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace CesiZen_API.Services
@@ -47,10 +49,14 @@ namespace CesiZen_API.Services
 
         public async Task<User?> UpdateUser(int id, PatchDTO userDto)
         {
+            if (userDto == null)
+            {
+                throw new BadRequestException("Aucune donné à mettre à jour");
+            }
             User? existing = await this.GetUserById(id);
             if (existing == null)
             {
-                return null;
+                throw new NotFoundException("L'utilisateur n'a pas été trouvé");
             }
 
             if (!string.IsNullOrEmpty(userDto.Login))
@@ -90,10 +96,11 @@ namespace CesiZen_API.Services
             }
 
             _context.User.Remove(existing);
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<User> GetUserByIdentifier(string identifier)
+        public async Task<User?> GetUserByIdentifier(string identifier)
         {
             try
             {
@@ -109,6 +116,18 @@ namespace CesiZen_API.Services
                 throw new Exception("Une erreur s'est produite" + ex.Message);
             }
 
+        }
+        public async Task<bool> ResetMyPassword(User user, ResetMyPasswordDTO resetMyPasswordDTO)
+        {
+            if (!user.VerifyPassword(resetMyPasswordDTO.OldPassword))
+            {
+                throw new BadRequestException("L'ancien mot de passe est invalide");
+            }
+            user.SetPassword(resetMyPasswordDTO.NewPassword);
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.User.Update(user);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

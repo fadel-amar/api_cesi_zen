@@ -13,5 +13,7 @@ namespace CesiZen_API.Services.Interfaces
         Task<bool> DeleteUser(int id);
         Task<User?> GetUserByIdentifier(string identifier);
 
+        Task<bool> ResetMyPassword(User user, ResetMyPasswordDTO resetMyPasswordDTO);
+
     }
 }

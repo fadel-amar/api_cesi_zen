@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using CesiZen_API.Helper.Atttributes;
 
 
 namespace CesiZen_API.DTO
@@ -18,20 +19,26 @@ namespace CesiZen_API.DTO
 
         [Required(ErrorMessage = "L'email est obligatoire")]
         [EmailAddress(ErrorMessage = "L'email doit être valide")]
+        [UniqueIdentifier(ErrorMessage = "L'email est dèjà utilisé")]
         public required string Email { get; set; }
 
         [Required(ErrorMessage = "L'identifiant doit être renseigné")]
+        [UniqueIdentifier(ErrorMessage = "Ce login est déjà utilisé")]
         public required string Login { get; set; }
 
         [Required(ErrorMessage = "Le mot de passe est obligatoire")]
+        //[RegularExpression(@"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$", ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères, incluant des lettres, des chiffres et des caractères spéciaux")]
         public required string Password { get; set; }
 
     }
 
     public class PatchDTO
     {
+        [MaxLength(25, ErrorMessage = "Le login doit avoir moins de 50 carctères")]
         public string? Login { get; set; }
+        [MaxLength(150, ErrorMessage ="L'email doit avoir moins de 150 caractères")]
         public string? Email { get; set; }
+        [RegularExpression(@"^(User|Admin)$", ErrorMessage = "Le rôle doit être soit 'User' soit 'Admin'")]
         public string? Role { get; set; }
         public bool? Disabled { get; set; }
         public bool? Banned { get; set; }
@@ -39,14 +46,19 @@ namespace CesiZen_API.DTO
 
     public class UpdateMyAccontDTO
     {
+        [MaxLength(25, ErrorMessage = "Le login doit avoir moins de 50 carctères")]
         public string? Login { get; set; }
+        [MaxLength(150, ErrorMessage = "L'email doit avoir moins de 150 caractères")]
         public string? Email { get; set; }
         public bool? Disabled { get; set; }
     }
 
-    public class resetMyPasswordDTO
+    public class ResetMyPasswordDTO
     {
-        public required string Password { get; set; }
-        public required string ConfirmPasswords { get; set; }
+        public required string OldPassword { get; set; }
+
+        [Required(ErrorMessage = "Le nouveau mot de passe est obligatoire")]
+        [RegularExpression(@"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$", ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères, incluant des lettres, des chiffres et des caractères spéciaux")]
+        public required string NewPassword { get; set; }
     }
 }

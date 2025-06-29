@@ -45,19 +45,24 @@ namespace CesiZen_API.Controllers
             return Ok(UserMapper.toResponseFullDto(user));
         }
 
-        [HttpPatch("{id}")]
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyAccount([CurrentUser] User user)
+        {
+            User? currentUser = await _userService.GetUserById(user.Id);
+            return Ok(UserMapper.toResponseFullDto(currentUser));
+        }
+
+
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] PatchDTO userDto)
         {
             User? user = await _userService.UpdateUser(id, userDto);
-            if (user == null)
-            {
-                return NotFound(new { status = 404, message = "Cet utilisatuer n'a pas été trouvé" });
-            }
             return Ok(UserMapper.toResponseFullDto(user));
         }
 
-        [HttpPatch("updateMyAccoutn")]
+        [HttpPut("me")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> UpdateMyAccount([CurrentUser] User user, UpdateMyAccontDTO updateMyAccontDTO)
         {
@@ -66,7 +71,7 @@ namespace CesiZen_API.Controllers
 
         }
 
-        [HttpDelete("deleteMyAccount")]
+        [HttpDelete("me")]
         [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> DeleteMyAccount([CurrentUser] User user)
         {
@@ -82,6 +87,14 @@ namespace CesiZen_API.Controllers
         {
             _userService.DeleteUser(id);
             return Ok(new { message = "Votre compte et vos informations ont été supprimé" });
+        }
+
+        [HttpPut("me/reset-password")]
+        [Authorize]
+        public async Task<IActionResult> ResetMyPassword([CurrentUser] User user, ResetMyPasswordDTO resetMyPasswordDTO)
+        {
+            bool status = await _userService.ResetMyPassword(user, resetMyPasswordDTO);
+            return Ok(new { message = "Votre mot de passe à bien été changé" });
         }
 
     }

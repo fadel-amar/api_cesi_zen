@@ -24,6 +24,8 @@
         public required int User { get; set; }
         public required DateTime CreatedAt { get; set; }
         public required DateTime UpdatedAt { get; set; }
+        public bool IsFavorite { get; set; }
+        public bool IsToLater { get; set; }
     }
     public class ListActivityResponseDTO
     {

@@ -6,6 +6,7 @@ namespace CesiZen_API.DTO.Response
     {
         public required int Id { get; set; }
         public required string Title { get; set; }
+        public DateTime CreatedAt { get; set; }
         public required Boolean Visibility { get; set; }
 
     }

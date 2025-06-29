@@ -1,6 +1,7 @@
 ﻿using CesiZen_API.DTO;
 using CesiZen_API.Models;
 using CesiZen_API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
@@ -40,9 +41,9 @@ public class AuthController : ControllerBase
 
         if (result == null)
         {
-            return BadRequest(new
+            return Unauthorized(new
             {
-                status = 400,
+                status = 401,
                 message = "Identifiants invalides"
             });
         }

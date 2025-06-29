@@ -1,12 +1,15 @@
-﻿using System.Security.Claims;
+﻿using System.Reflection.Metadata;
+using System.Security.Claims;
 using CesiZen_API.DTO;
 using CesiZen_API.DTO.Response;
+using CesiZen_API.Helper;
 using CesiZen_API.Mapper;
 using CesiZen_API.ModelBlinders;
 using CesiZen_API.Models;
 using CesiZen_API.Services;
 using CesiZen_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CesiZen_API.Controllers
@@ -22,22 +25,22 @@ namespace CesiZen_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetActivities()
+        public async Task<IActionResult> GetActivities([FromQuery] FilterActivity filter = null)
         {
             bool isAdmin = User.IsInRole("Admin");
-            IEnumerable<Activite>? activities = await _activityService.GetAllActivities(isAdmin);
+            IEnumerable<Activite>? activities = await _activityService.GetAllActivities(isAdmin, filter);
             return Ok(ActitvityMapper.toListResponseDTO(activities));
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetActivityById(int id)
+        public async Task<IActionResult> GetActivityById(int id, [CurrentUser] User user)
         {
             bool isAdmin = User.IsInRole("Admin");
             Activite? activity = await _activityService.GetActivityById(id, isAdmin);
-            return Ok(ActitvityMapper.toResponseFullDTO(activity));
+            return Ok(ActitvityMapper.toResponseFullDTO(activity, user == null ? null : user.Id));
         }
 
-        [HttpGet("favorite")]
+        [HttpGet("favorites")]
         [Authorize()]
         public async Task<IActionResult> GetActivitiesFavorite([CurrentUser] User user)
         {
@@ -118,11 +121,21 @@ namespace CesiZen_API.Controllers
         public async Task<IActionResult> DeleteActivity(int id)
         {
             await _activityService.DeleteActivity(id);
-            return StatusCode(204, new
-            {
-                status = 204,
-                message = "L'activité a bien été supprimée"
-            });
+            return NoContent();
+        }
+
+        [HttpGet("featured")]
+        public async Task<IActionResult> GetFeaturedActivities()
+        {
+            IEnumerable<Activite>? activities = await _activityService.GetTopActivities();
+            return Ok(ActitvityMapper.toListResponseDTO(activities));
+
+        }
+
+        [HttpGet("types")]
+        public async Task<IActionResult> GetTypesActivity()
+        {
+            return Ok(Constants.ACTIVITY_TYPES);
         }
 
     }

@@ -30,7 +30,7 @@ namespace CesiZen_API.Mapper
                 Id = page.Id,
                 Title = page.Title,
                 Visibility = page.Visibility,
-
+                CreatedAt = page.CreatedAt,
             };
         }
 

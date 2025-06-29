@@ -21,13 +21,27 @@ namespace CesiZen_API.Services
             _context = context;
             _categoryService = categoryService;
         }
-        public async Task<IEnumerable<Activite>> GetAllActivities(bool isAdmin)
+        public async Task<IEnumerable<Activite>> GetAllActivities(bool isAdmin, FilterActivity? filter)
         {
             var query = _context.Activite.Include(p => p.Category).AsQueryable();
-
             if (!isAdmin)
             {
-                query = query.Where(p => p.Status);
+                query = query.Where(p => p.Status == true);
+            }
+
+            if (filter != null)
+            {
+                if (!string.IsNullOrEmpty(filter.title))
+                    query = query.Where(p => p.Title.Contains(filter.title));
+
+                if (filter.category.HasValue)
+                    query = query.Where(p => p.Category.Id == filter.category.Value);
+
+                if (filter.typeActivity.HasValue)
+                    query = query.Where(p => p.TypeActitvity == Constants.ACTIVITY_TYPES[filter.typeActivity.Value]);
+
+                if (isAdmin && filter.status.HasValue)
+                    query = query.Where(p => p.Status == filter.status.Value);
             }
 
             return await query.ToListAsync();
@@ -38,6 +52,7 @@ namespace CesiZen_API.Services
             var query = _context.Activite
                 .Include(p => p.Category)
                 .Include(p => p.User)
+                .Include(p => p.SavedActivities)
                 .AsQueryable();
 
             if (!isAdmin)
@@ -95,14 +110,18 @@ namespace CesiZen_API.Services
 
         public async Task<Activite> CreateActivity(CreateActivityDTO createActivityDTO, User user)
         {
-            var allowedImageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            var allowedMediaExtensions = new[] { ".mp4", ".mov", ".avi", ".mp3", ".wav", ".ogg" };
+            var allowedImageExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var allowedMediaExtensions = new[] { ".mp4", ".mp3", ".wav" };
 
             if (createActivityDTO == null)
             {
                 throw new BadRequestException("L'activité est invalide");
             }
-            Category? category = await _categoryService.GetCategoryById(createActivityDTO.CategoryId);
+            Category? category = await _categoryService.GetCategoryById(createActivityDTO.CategoryId, true);
+            if(category.Visibility == false )
+            {
+                throw new BadRequestException("Vous ne pouvez pas assigner cette catégorie à cette activité car elle est en status non visible");
+            }
 
 
             // Vérifier les extensions
@@ -123,7 +142,7 @@ namespace CesiZen_API.Services
 
             // Sauvegarder le média (vidéo/musique)
             var mediaName = $"{Guid.NewGuid()}{mediaExt}";
-            var mediaPath = Path.Combine("wwwroot/media", mediaName);
+            var mediaPath = Path.Combine("wwwroot/medias", mediaName);
             using (var stream = new FileStream(mediaPath, FileMode.Create))
                 await createActivityDTO.Url.CopyToAsync(stream);
             Activite activity = new Activite
@@ -131,7 +150,7 @@ namespace CesiZen_API.Services
                 Title = createActivityDTO.Title,
                 Description = createActivityDTO.Description,
                 ImagePresentation = $"/images/{imageName}",
-                Url = $"/media/{mediaName}",
+                Url = $"/medias/{mediaName}",
                 User = user,
                 Category = category,
                 Duree = createActivityDTO.DurationMin,
@@ -152,10 +171,11 @@ namespace CesiZen_API.Services
             Category? category = null;
             if (updateActivityDTO.CategoryId.HasValue)
             {
-                category = await _categoryService.GetCategoryById(updateActivityDTO.CategoryId.Value);
+                category = await _categoryService.GetCategoryById(updateActivityDTO.CategoryId.Value, true);
             }
 
             Activite? activityExisting = await GetActivityById(id, true);
+            activityExisting.Status = updateActivityDTO.Status ?? activityExisting.Status;
             activityExisting.Title = updateActivityDTO.Title ?? activityExisting.Title;
             activityExisting.Description = updateActivityDTO.Description ?? activityExisting.Description;
             activityExisting.Duree = updateActivityDTO.DurationMin ?? activityExisting.Duree;
@@ -171,21 +191,21 @@ namespace CesiZen_API.Services
                 // Supprimer ancien fichier vidéo
                 if (!string.IsNullOrWhiteSpace(activityExisting.Url))
                 {
-                    var oldVideoPath = Path.Combine("wwwroot/media", Path.GetFileName(activityExisting.Url));
+                    var oldVideoPath = Path.Combine("wwwroot/medias", Path.GetFileName(activityExisting.Url));
                     if (File.Exists(oldVideoPath))
                         File.Delete(oldVideoPath);
                 }
 
                 var videoExt = Path.GetExtension(updateActivityDTO.Url.FileName);
                 var newVideoName = $"{Guid.NewGuid()}{videoExt}";
-                var videoPath = Path.Combine("wwwroot/media", newVideoName);
+                var videoPath = Path.Combine("wwwroot/medias", newVideoName);
 
                 using (var stream = new FileStream(videoPath, FileMode.Create))
                 {
                     await updateActivityDTO.Url.CopyToAsync(stream);
                 }
 
-                activityExisting.Url = $"/media/{newVideoName}";
+                activityExisting.Url = $"/medias/{newVideoName}";
             }
 
             // Fichier image
@@ -222,7 +242,7 @@ namespace CesiZen_API.Services
             Activite activity = await GetActivityById(id, true);
             if (!string.IsNullOrWhiteSpace(activity.Url))
             {
-                var mediaPath = Path.Combine("wwwroot/media", Path.GetFileName(activity.Url));
+                var mediaPath = Path.Combine("wwwroot/medias", Path.GetFileName(activity.Url));
                 if (File.Exists(mediaPath))
                     File.Delete(mediaPath);
             }
@@ -294,7 +314,39 @@ namespace CesiZen_API.Services
             return true;
         }
 
+        public async Task<IEnumerable<Activite>> GetTopActivities()
+        {
+            var topActivities = await _context.Activite
+                .Include(sa => sa.Category)
+                .Join(_context.SaveActivity,
+                      a => a.Id,
+                      sa => sa.ActiviteId,
+                      (a, sa) => new { Activity = a, SaveActivity = sa })
+                .GroupBy(x => x.Activity.Id)
+                .Select(g => new
+                {
+                    ActivityId = g.Key,
+                    SaveCount = g.Count(),
+                    ActivityDetails = g.Select(x => x.Activity)
+                })
+                .OrderByDescending(x => x.SaveCount)
+                .Take(3)
+                .Select(x => x.ActivityDetails.FirstOrDefault()!) 
+                .ToListAsync();
 
+            var query = _context.Activite.Include(p => p.Category).AsQueryable();
+            query = query.Where(p => p.Status);
+            if (!topActivities.Any())
+            {
+                topActivities = await _context.Activite
+                   .Include(p => p.Category)
+                   .Where(p => p.Status)
+                   .OrderBy(p => p.Id)
+                   .Take(3)
+                   .ToListAsync();
+            }
 
+            return topActivities;
+        }
     }
 }

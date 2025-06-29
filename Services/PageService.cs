@@ -15,9 +15,10 @@ namespace CesiZen_API.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<Page>> GetAllPages()
+        public async Task<IEnumerable<Page>> GetAllPages(bool isAdmin)
         {
             var pages = await _context.Page
+                .Where(p => isAdmin || p.Visibility)
                 .ToListAsync();
 
             return pages;
@@ -39,10 +40,11 @@ namespace CesiZen_API.Services
             return pages;
         }
 
-        public async Task<Page> GetPageById(int id)
+        public async Task<Page> GetPageById(int id, bool isAdmin)
         {
             var page = await _context.Page
                 .Include(p => p.User)
+                .Where(p => isAdmin || p.Visibility)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (page == null)

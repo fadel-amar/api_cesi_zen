@@ -34,11 +34,21 @@ namespace CesiZen_API.DTO
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "Le type d'activité doit être supérieur à zéro.")]
         public int? DurationMin { get; set; }
         public IFormFile? Url { get; set; }
         public IFormFile? ImagePresentation { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "L'ID de la catégorie doit être supérieur à zéro.")]
         public int? CategoryId { get; set; }
         public int? TypeActivitty { get; set; }
-        public int? Status { get; set; }
+        public bool? Status { get; set; }
     }
+    public class FilterActivity
+    {
+        public string? title { get; set; }
+        public int? category { get; set; }
+        public int? typeActivity { get; set; }
+        public bool? status { get; set; }
+    }
+
 }

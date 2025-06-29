@@ -43,5 +43,8 @@ namespace CesiZen_API.Models
 
         [Required]
         public required User User { get; set; }
+
+        public ICollection<SaveActivity> SavedActivities { get; set; } = new List<SaveActivity>();
+
     }
 }
