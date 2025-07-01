@@ -140,13 +140,13 @@ public class Program
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
-        /*
+        
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<AppDbContext>();
             FakerData.SeedAllData(context);
-        }*/
+        }
         app.UseStaticFiles();
 
         app.Run();

@@ -145,7 +145,7 @@ namespace CesiZen_API.Data
                 .RuleFor(p => p.Menu, f => f.PickRandom(menus))
                 .RuleFor(p => p.User, f => f.PickRandom(users));
 
-            var pages = faker.Generate(10);
+            var pages = faker.Generate(50);
             dbContext.Page.AddRange(pages);
             return pages;
         }
