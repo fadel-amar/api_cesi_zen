@@ -1,0 +1,21 @@
+# Ignorer les fichiers/dossiers g�n�r�s par Visual Studio et Docker
+.vs/
+bin/
+BDD/
+# Ignorer les dossiers de build
+bin/
+obj/
+Migrations/
+# Ignorer les fichiers utilisateur
+*.user
+*.suo
+
+# Ignorer les fichiers de configuration sensibles
+.env
+appsettings.Development.json
+
+# Ignorer les sauvegardes ou fichiers temporaires
+*.tmp
+*.bak
+/wwwroot/images
+/wwwroot/medias
